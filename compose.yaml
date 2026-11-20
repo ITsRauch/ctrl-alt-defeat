@@ -1,0 +1,23 @@
+name: ctrl-alt-defeat
+services:
+  game:
+    build: .
+    image: ctrl-alt-defeat:1.0
+    restart: unless-stopped
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 256m
+    pids_limit: 128
+    ports:
+      - "192.168.1.10:8091:8091"   # LAN interface only - do not forward to the internet
+    volumes:
+      - ./data:/app/data       # highscores.json (uid 1000 = node in the container)
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"

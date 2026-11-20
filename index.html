@@ -12,15 +12,15 @@
     font-family:ui-monospace,'Cascadia Mono','JetBrains Mono',Menlo,Consolas,monospace;overflow:hidden}
   #stage{position:relative;width:100%;height:100%}
   canvas{display:block;width:100%;height:100%;background:var(--bg)}
-  .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:rgba(12,14,20,.88);z-index:5;padding:24px;text-align:center}
+  .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:safe center;
+    background:rgba(12,14,20,.88);z-index:5;padding:24px;text-align:center;overflow-y:auto}
   .hidden{display:none!important}
   h1{margin:0 0 4px;font-size:clamp(24px,4vw,42px);letter-spacing:2px;color:var(--amber);
      text-shadow:0 0 18px rgba(255,200,87,.35)}
   h1 .sub{display:block;font-size:.42em;letter-spacing:4px;color:var(--red);margin-top:6px}
   .tagline{color:var(--dim);margin:10px 0 18px;max-width:600px;line-height:1.5}
   .menorow{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:18px;align-items:center}
-  .mbtn{background:var(--panel2);border:1px solid #3a4460;border-radius:8px;padding:10px 18px;cursor:pointer;
+  .mbtn{background:var(--panel);border:1px solid #3a4460;border-radius:8px;padding:10px 18px;cursor:pointer;
     color:var(--ink);font-family:inherit;font-size:13px}
   .mbtn:hover{border-color:var(--lime)}
   .mbtn.primary{border-color:var(--cyan);color:var(--cyan)}
@@ -56,6 +56,99 @@
   .roominfo{background:var(--panel);border:1px dashed var(--lime);border-radius:10px;padding:10px 18px;margin:12px 0;
     font-size:13px;color:var(--lime);letter-spacing:1px}
   .err{color:var(--red);font-size:13px;min-height:18px;margin-top:8px}
+  /* --- start menu --- */
+  .namefield{display:flex;align-items:center;gap:10px;margin:4px 0 18px;font-size:12px;letter-spacing:2px;color:var(--dim)}
+  .namefield input{width:200px}
+  .modes{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:stretch}
+  .modecard{background:var(--panel);border:1px solid #333c55;border-radius:12px;padding:18px 18px 16px;width:250px;
+    text-align:left;color:var(--ink);font-family:inherit;display:flex;flex-direction:column;gap:6px;
+    transition:transform .12s,border-color .12s}
+  button.modecard{cursor:pointer}
+  .modecard:hover{transform:translateY(-4px)}
+  .modecard .mstep{font-size:10px;letter-spacing:3px;color:var(--dim)}
+  .modecard h3{margin:0;font-size:17px;letter-spacing:1px}
+  .modecard p{margin:0;font-size:12px;color:var(--dim);line-height:1.55;flex:1}
+  .modecard.solo:hover{border-color:var(--ink)}
+  .modecard.host{border-color:var(--lime);box-shadow:0 0 22px rgba(124,252,155,.12)}
+  .modecard.host h3{color:var(--lime)}
+  .modecard.join{border-color:var(--cyan)} .modecard.join h3{color:var(--cyan)}
+  .modecard .go{font-size:12px;font-weight:700;letter-spacing:1px}
+  .modecard.host .go{color:var(--lime)} .modecard.solo .go{color:var(--ink)}
+  .joinrow{display:flex;gap:8px;margin-top:4px}
+  .joinrow .mbtn{flex:1;border-color:var(--cyan);color:var(--cyan);font-weight:700}
+  #codeIn{text-transform:uppercase;width:110px;letter-spacing:6px;text-align:center;font-size:16px;font-weight:700}
+  .guide{margin-top:22px;max-width:800px;width:100%;background:rgba(28,33,48,.6);border:1px solid #2a3248;border-radius:12px;
+    padding:14px 18px;text-align:left;font-size:12px;color:var(--dim);line-height:1.7}
+  .guide h4{margin:0 0 8px;font-size:11px;letter-spacing:3px;color:var(--amber)}
+  .guide ol{margin:0 0 10px;padding-left:20px} .guide li{margin:2px 0} .guide b{color:var(--ink)}
+  .guide .ctl{border-top:1px solid #2a3248;padding-top:8px}
+  .stephead{display:flex;align-items:center;gap:14px;margin:0 0 16px;flex-wrap:wrap;justify-content:center}
+  .stephead .what{font-size:13px;letter-spacing:2px;color:var(--amber)}
+  .backbtn{background:transparent;border:1px solid #3a4460;color:var(--dim);border-radius:8px;padding:7px 12px;
+    font-family:inherit;font-size:12px;cursor:pointer} .backbtn:hover{color:var(--ink);border-color:var(--ink)}
+  .stepsub{font-size:12px;color:var(--dim);margin:-6px 0 16px}
+  /* --- lobby --- */
+  .codebig{font-size:clamp(46px,9vw,84px);font-weight:800;letter-spacing:.25em;padding-left:.25em;color:var(--lime);
+    text-shadow:0 0 28px rgba(124,252,155,.35);margin:2px 0 6px;user-select:all}
+  .lobbyhint{max-width:620px;color:var(--dim);font-size:13px;line-height:1.7}
+  .lobbyhint b{color:var(--ink)} .lobbyhint .url{color:var(--cyan)}
+  .copyrow{display:flex;gap:10px;margin:12px 0 4px;flex-wrap:wrap;justify-content:center}
+  .plist{margin:16px 0 4px;min-width:280px;background:var(--panel);border:1px solid #333c55;border-radius:10px;padding:10px 16px;text-align:left}
+  .plist .ph{font-size:10px;letter-spacing:3px;color:var(--dim);margin-bottom:6px}
+  .plist .pl{font-size:14px;padding:3px 0;display:flex;justify-content:space-between;gap:20px}
+  .plist .pl span{color:var(--dim);font-size:12px}
+  .plist .slot{color:#4a5370;font-size:13px;padding:3px 0}
+  .pulse{animation:pulse 1.6s ease-in-out infinite} @keyframes pulse{50%{opacity:.4}}
+  .toast{color:var(--lime);font-size:12px;min-height:16px;margin-top:4px}
+  .lobbywrap{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;align-items:flex-start;margin-top:8px}
+  .lobbycol{display:flex;flex-direction:column;align-items:stretch;gap:8px;width:340px}
+  .colhead{font-size:10px;letter-spacing:3px;color:var(--dim);text-align:left}
+  .plist{margin:0;min-width:0}
+  .plist .pl{align-items:center;padding:7px 0;border-bottom:1px solid #262d40;font-size:14px}
+  .plist .pl:last-of-type{border-bottom:none}
+  .plist .pn{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .plist .pn small{color:var(--cyan);font-size:11px}
+  .tag{font-size:10px;letter-spacing:2px;border-radius:6px;padding:3px 7px;white-space:nowrap;border:1px solid}
+  .tag.host{color:var(--amber);border-color:rgba(255,200,87,.5)}
+  .tag.rdy{color:#10151f;background:var(--lime);border-color:var(--lime);font-weight:700}
+  .tag.wait{color:var(--dim);border-color:#3a4460}
+  .clspick{display:flex;flex-direction:column;gap:8px}
+  .clsbtn{background:var(--panel);border:1px solid #333c55;border-radius:10px;padding:10px 12px;text-align:left;cursor:pointer;
+    color:var(--ink);font-family:inherit;transition:border-color .12s}
+  .clsbtn:hover{border-color:var(--ink)}
+  .clsbtn:focus{outline:none} .clsbtn:focus-visible{outline:1px dashed var(--dim);outline-offset:2px}
+  .clsbtn h3{margin:0 0 2px;font-size:14px;color:var(--lime)} .clsbtn .wpn{font-size:11px;color:var(--cyan)}
+  .clsbtn p{margin:4px 0 0;font-size:11px;color:var(--dim);line-height:1.45}
+  .clsbtn.sel{border-color:var(--lime);box-shadow:0 0 0 1px var(--lime) inset,0 0 18px rgba(124,252,155,.15)}
+  .clsbtn.sel h3::after{content:'  ✓ selected';font-size:10px;letter-spacing:1px;color:var(--dim)}
+  .clspick.locked .clsbtn{opacity:.5;cursor:not-allowed}
+  .readybtn{margin-top:4px;border-radius:8px;padding:12px 18px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;letter-spacing:1px;
+    background:transparent;color:var(--lime);border:2px solid var(--lime)}
+  .readybtn.on{background:var(--lime);color:#10151f}
+  .bigbtn.notall{background:transparent;color:var(--amber);border:2px solid var(--amber)}
+  .lobbyactions{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:16px}
+  /* --- highscores --- */
+  #scores{z-index:7;background:rgba(12,14,20,.97)}
+  .hsrow{display:flex;gap:12px;justify-content:center;align-items:center;margin:16px 0 0;flex-wrap:wrap}
+  .hsbtn{border-color:var(--amber)!important;color:var(--amber)!important;font-weight:700}
+  .teaser{font-size:12px;color:var(--dim)} .teaser b{color:var(--amber)}
+  .tabs{display:flex;gap:8px;margin:6px 0 10px}
+  .tab{background:transparent;border:1px solid #3a4460;color:var(--dim);border-radius:8px;padding:8px 18px;font-family:inherit;font-size:13px;cursor:pointer;letter-spacing:1px}
+  .tab.on{border-color:var(--amber);color:var(--amber);font-weight:700}
+  .hsnote{font-size:11px;color:var(--dim);margin-bottom:10px}
+  .hswrap{max-height:56vh;overflow-y:auto;border:1px solid #2a3248;border-radius:10px;background:var(--panel);min-width:min(720px,92vw)}
+  table.hs{border-collapse:collapse;width:100%;font-size:13px}
+  table.hs th{position:sticky;top:0;background:#20263a;color:var(--dim);font-size:10px;letter-spacing:2px;font-weight:400;padding:8px 10px;text-align:right}
+  table.hs td{padding:6px 10px;border-top:1px solid #262d40;text-align:right;white-space:nowrap}
+  table.hs td.who,table.hs th.who{text-align:left;white-space:normal}
+  table.hs td.rk{color:var(--dim);width:36px}
+  table.hs tr.r1 td.rk{color:#ffd700} table.hs tr.r2 td.rk{color:#c0c8d8} table.hs tr.r3 td.rk{color:#cd8a4a}
+  table.hs tr.mine td{background:rgba(124,252,155,.12)} table.hs tr.mine td.who{color:var(--lime)}
+  .cls{font-size:10px;color:var(--cyan);margin-left:4px}
+  .hsempty{padding:26px;color:var(--dim);font-size:13px}
+  .rankline{font-size:16px;font-weight:700;min-height:22px;margin:4px 0 6px;letter-spacing:1px}
+  .rankline.new{color:var(--amber);text-shadow:0 0 16px rgba(255,200,87,.4)} .rankline.meh{color:var(--dim);font-weight:400;font-size:13px}
+  #startStatus{color:var(--cyan);font-size:13px;min-height:18px;margin-top:6px}
 </style>
 </head>
 <body>
@@ -64,20 +157,92 @@
 
   <div id="start" class="overlay">
     <h1>CTRL-ALT-DEFEAT<span class="sub">▓ PRINTER UPRISING · LAN CO-OP ▓</span></h1>
-    <div class="menorow">
-      <button class="mbtn" id="btnSolo">SOLO SHIFT</button>
-      <button class="mbtn primary" id="btnHost">HOST LAN GAME</button>
-      <input class="txt" id="nameIn" placeholder="name" maxlength="16">
-      <input class="txt" id="codeIn" placeholder="CODE" maxlength="4">
-      <button class="mbtn" id="btnJoin">JOIN</button>
+    <div class="tagline">Survive the printer uprising — alone, or together with up to 3 colleagues on the LAN.</div>
+
+    <div id="stepMode">
+      <label class="namefield">YOUR NAME <input class="txt" id="nameIn" placeholder="Admin" maxlength="16" autocomplete="off"></label>
+      <div class="modes">
+        <button class="modecard host" id="btnHost">
+          <div class="mstep">MULTIPLAYER</div>
+          <h3>⌂ HOST A NEW GAME</h3>
+          <p>Opens a <b style="color:var(--lime)">lobby</b> with a 4-letter code. Colleagues join, everyone picks a class and readies up — then you press START.</p>
+          <div class="go">CREATE LOBBY ▸</div>
+        </button>
+        <div class="modecard join">
+          <div class="mstep">MULTIPLAYER</div>
+          <h3>⇢ JOIN A GAME</h3>
+          <p>Someone already hosts? Enter the code shown on their screen.</p>
+          <div class="joinrow">
+            <input class="txt" id="codeIn" placeholder="CODE" maxlength="4" autocomplete="off" spellcheck="false">
+            <button class="mbtn" id="btnJoin">JOIN ▸</button>
+          </div>
+        </div>
+        <button class="modecard solo" id="btnSolo">
+          <div class="mstep">SINGLEPLAYER</div>
+          <h3>▶ SOLO SHIFT</h3>
+          <p>Play alone. No room, no code, no colleagues to blame.</p>
+          <div class="go">START ALONE ▸</div>
+        </button>
+      </div>
+      <div class="hsrow">
+        <button class="mbtn hsbtn" id="btnScores">🏆 HIGHSCORES</button>
+        <span class="teaser" id="hsTeaser"></span>
+      </div>
+      <div class="guide">
+        <h4>▓ HOW TO PLAY TOGETHER</h4>
+        <ol>
+          <li><b>One person hosts:</b> enter a name → <b>HOST A NEW GAME</b>. A lobby with a big room code opens.</li>
+          <li><b>Everyone else</b> opens <b class="joinurl">this page</b> on their own computer → name → type the code under <b>JOIN A GAME</b>.</li>
+          <li>In the lobby everyone picks a <b>class</b> and clicks <b>I'M READY</b>. Once all are ready, the host presses <b>START SHIFT</b>. Late joiners can still hop in mid-game.</li>
+          <li><b>The host's browser runs the game</b> — host, keep that tab open, or the shift ends for everyone.</li>
+        </ol>
+        <div class="ctl"><span class="key">WASD</span> / <span class="key">← ↑ → ↓</span> move &nbsp;·&nbsp; weapons fire <b>automatically</b> &nbsp;·&nbsp; collect green RAM for XP &nbsp;·&nbsp;
+          stand next to a downed colleague for 3 s to revive them &nbsp;·&nbsp; <span class="key">P</span> pause (host only)</div>
+      </div>
     </div>
-    <div class="roominfo hidden" id="roomInfo"></div>
+
+    <div id="stepChar" class="hidden">
+      <div class="stephead"><button class="backbtn" id="btnBack">← back</button><span class="what" id="charWhat"></span></div>
+      <div class="stepsub" id="charSub">Pick your character</div>
+      <div class="chars" id="charSel"></div>
+    </div>
+    <div id="startStatus"></div>
     <div class="err" id="startErr"></div>
-    <div class="chars hidden" id="charSel"></div>
-    <div class="howto" id="startHowto">
-      <span class="key">WASD</span> / <span class="key">← ↑ → ↓</span> move &nbsp;·&nbsp; attacks fire automatically &nbsp;·&nbsp; collect RAM for XP<br>
-      downed admins can be revived by standing near them &nbsp;·&nbsp; <span class="key">P</span> pause (host)
+  </div>
+
+  <div id="lobby" class="overlay hidden">
+    <div class="mstep" style="font-size:11px;letter-spacing:4px;color:var(--dim)" id="lobbyKicker">ROOM CODE</div>
+    <div class="codebig" id="lobbyCode">----</div>
+    <div class="lobbyhint" id="lobbyHint"></div>
+    <div class="copyrow" id="copyRow">
+      <button class="mbtn" id="btnCopyLink">⧉ copy invite link</button>
+      <button class="mbtn" id="btnCopyCode">⧉ copy code</button>
     </div>
+    <div class="toast" id="lobbyToast"></div>
+    <div class="lobbywrap">
+      <div class="lobbycol">
+        <div class="colhead" id="listHead">ADMINS IN ROOM</div>
+        <div class="plist" id="lobbyList"></div>
+      </div>
+      <div class="lobbycol">
+        <div class="colhead">YOUR CLASS</div>
+        <div class="clspick" id="lobbyClasses"></div>
+        <button class="readybtn" id="btnReady">I'M READY ✓</button>
+      </div>
+    </div>
+    <div class="lobbyactions">
+      <button class="bigbtn" id="btnStartShift">START SHIFT ▶</button>
+      <div class="small" id="lobbyWait"></div>
+      <button class="ghostbtn" id="btnLobbyLeave">leave room</button>
+    </div>
+  </div>
+
+  <div id="scores" class="overlay hidden">
+    <h1 style="font-size:30px">🏆 HALL OF FAME</h1>
+    <div class="tabs"><button class="tab" data-tab="solo">SOLO</button><button class="tab" data-tab="multi">MULTIPLAYER</button></div>
+    <div class="hsnote">Top 20 · ranked by time survived, then printers destroyed · stored on the server</div>
+    <div class="hswrap"><table class="hs" id="hsTable"></table></div>
+    <button class="ghostbtn" id="btnScoresClose">close</button>
   </div>
 
   <div id="levelup" class="overlay hidden">
@@ -90,7 +255,9 @@
     <h1 id="deathTitle">SIGNAL LOST</h1>
     <div class="tagline" id="deadWhy">The printers have taken your keyboard. Your ticket has been closed, unresolved.</div>
     <div class="stats" id="deadStats"></div>
+    <div class="rankline" id="deadRank"></div>
     <button class="bigbtn" onclick="toStart()">REBOOT</button>
+    <button class="ghostbtn hsbtn" onclick="openScores()">🏆 HIGHSCORES</button>
     <div class="small" id="deadHint">The helpdesk never rests.</div>
   </div>
 
@@ -156,10 +323,13 @@ addEventListener('keydown', e => {
   if (['levelup','dead','win'].includes(state)) return;
   if (e.target && e.target.tagName === 'INPUT') return;
   keys.add(e.code);
-  if (e.code === 'KeyP' && isHost && (st === 0 || st === 4)) st = st === 0 ? 4 : 0;
+  if (e.code === 'KeyP' && isHost() && (st === 0 || st === 4)) st = st === 0 ? 4 : 0;
   audio(); sendInput(true);
 });
 addEventListener('keyup', e => { keys.delete(e.code); sendInput(true); });
+function clearKeys(){ keys.clear(); sendInput(true); }
+addEventListener('blur', clearKeys);
+document.addEventListener('visibilitychange', () => { if (document.hidden) clearKeys(); });
 
 /* ---------- world / defs (shared) ---------- */
 const ARENA_W = 3400, ARENA_H = 2600;
@@ -243,6 +413,7 @@ let ws = null, myId = 0, hostId = 0, roomCode = '';
 const isClient = () => mode === 'client';
 function connectWS(cb){
   if (ws && ws.readyState === 1) return cb();
+  if (ws && ws.readyState === 0) return;          // already connecting (double click)
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   ws = new WebSocket(proto + '://' + location.host);
   ws.onopen = () => cb();
@@ -266,13 +437,13 @@ function readLocalInput(){
   return { mx, my };
 }
 function netLost(){
-  if (state !== 'playing') return;
+  if (state !== 'playing' && state !== 'lobby'){ if (state === 'start' && netBusy){ netBusy = false; document.getElementById('startStatus').textContent = ''; document.getElementById('startErr').textContent = 'Could not reach the game server.'; } return; }
   showDead('CONNECTION LOST', 'The LAN cable was tripped over. The shift ended abruptly.');
 }
 function netMsg(m){
   if (m.t === 'welcome'){ myId = m.id; hostId = m.hostId; roomCode = m.code;
-    netSend({ k: 'j', cid: CHARS.findIndex(c => c.id === pendingChar), name: pendingName }); }
-  else if (m.t === 'err') document.getElementById('startErr').textContent = m.msg;
+    if (m.role === 'client') netSend({ k: 'j', cid: CHARS.findIndex(c => c.id === pendingChar), name: pendingName }); }
+  else if (m.t === 'err'){ document.getElementById('startStatus').textContent = ''; document.getElementById('startErr').textContent = '✖ ' + m.msg + ' — check the code on the host\'s screen.'; netBusy = false; showStartStep(); document.getElementById('codeIn').focus(); }
   else if (m.t === 'hostleft'){ if (mode === 'client') showDead('HOST LOGGED OFF', 'The hosting admin closed their laptop. The room is gone.'); }
   else if (m.t === 'relay') hostMsg(Object.assign({}, m.data || {}, { from: m.from }));
 }
@@ -282,7 +453,17 @@ function applyHostCmd(k, from){   // win-screen decisions, executed on host only
 }
 function hostMsg(d){              // host receives from a client
   if (!d || typeof d.k !== 'string') return;
-  if (d.k === 'j'){ addPlayer(CHARS[clamp(d.cid|0, 0, 2)], d.from, String(d.name||'Admin').slice(0,16)); }
+  if (d.k === 'peer-leave'){ const p = players.find(p => p.id === d.id); if (p){ players = players.filter(q => q !== p); bigEvent(p.name + ' logged off', '#8a93a8', p.x, p.y - 40); if (state === 'playing') stAllCheck(); lobbyUpdate(); } return; }
+  if (d.k === 'j'){
+    if (players.some(p => p.id === d.from)) return;
+    if (state !== 'lobby' && !d.late){ netSend({ k: 'running', for: d.from }); return; }   // shift running: let them pick a class first
+    const p = addPlayer(CHARS[clamp(d.cid|0, 0, 2)], d.from, String(d.name||'Admin').slice(0,16));
+    p.ready = false;
+    if (d.late && me){ p.x = clamp(me.x + rnd(-50, 50), 20, ARENA_W - 20); p.y = clamp(me.y + rnd(-50, 50), 20, ARENA_H - 20); p.iframe = 2; bigEvent(p.name + ' joined the shift!', '#7cfc9b', p.x, p.y - 40); }
+    lobbyUpdate();
+  }
+  else if (d.k === 'cls'){ const p = players.find(p => p.id === d.from); if (p && state === 'lobby'){ setClass(p, CHARS[clamp(d.cid|0, 0, 2)]); lobbyUpdate(); } }
+  else if (d.k === 'rdy'){ const p = players.find(p => p.id === d.from); if (p && state === 'lobby'){ p.ready = !!d.v; lobbyUpdate(); } }
   else if (d.k === 'i'){ const p = players.find(p => p.id === d.from); if (p) p.in = { mx: clamp(d.mx,-1,1), my: clamp(d.my,-1,1) }; }
   else if (d.k === 'pick'){ const p = players.find(p => p.id === d.from); if (p && p.offered && p.offered[d.n]) { applyCard(p, p.offered[d.n]); p.offered = null; p.pending--; } }
   else if (d.k === 'cont' || d.k === 'quit') applyHostCmd(d.k, d.from);
@@ -300,9 +481,13 @@ function addPlayer(ch, id, name){
   };
   players.push(p);
   if (p.id === myId || mode === 'solo') me = p;
+  if (isHost()) runRoster.set(p.id, { n: p.name, c: ch.id });
   return p;
 }
+let runId = '', runKills = 0, runBosses = 0, runMaxLvl = 1, runRoster = new Map(), hsSent = false, myHsId = '';
 function newRun(ch){
+  runId = Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(16).padStart(2, '0')).join('');
+  runKills = 0; runBosses = 0; runMaxLvl = 1; runRoster = new Map(); hsSent = false;
   players = []; me = null;
   if (isHost()) addPlayer(ch, myId, pendingName);
   enemies = []; eprojs = []; projs = []; pickups = []; particles = []; texts = []; zaps = []; fx = [];
@@ -327,7 +512,8 @@ function spawnEnemy(type, anywhere, px, py){
   if (enemies.length > 135) return;
   const d = EDEF[type];
   let x, y;
-  const ref = (px !== undefined) ? { x: px, y: py } : (me || players[0]);
+  const al = alivePlayers();
+  const ref = (px !== undefined) ? { x: px, y: py } : (al.length ? al[irnd(0, al.length - 1)] : (me || players[0]));
   if (anywhere){ x = rnd(100, ARENA_W - 100); y = rnd(100, ARENA_H - 100); }
   else {
     const a = rnd(0, Math.PI * 2), dd = rnd(540, 700);
@@ -353,7 +539,7 @@ function bigEvent(s, c, x, y){
 }
 
 /* ---------- combat helpers ---------- */
-function alivePlayers(){ return players.filter(p => p.dn <= 0); }
+function alivePlayers(){ return players.filter(p => p.dn <= 0 && !p.out); }
 function nearestPlayerTo(x, y){
   let best = null, bd = 1e9;
   for (const p of alivePlayers()){ const d = dist(x, y, p.x, p.y); if (d < bd){ bd = d; best = p; } }
@@ -365,7 +551,7 @@ function nearestEnemy(x, y, maxD, exclude){
   return best;
 }
 function addProj(p, x, y, ang, spd, dmg, life, kind, r, pierce, home){
-  projs.push({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, dmg, life, kind, r: r || 5, pierce: pierce || 0, hit: [], home: home || 0, ang });
+  projs.push({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, dmg, life, kind, r: r || 5, pierce: pierce || 0, hit: [], home: home || 0, ang, own: p });
 }
 function wDmg(p, base){ return base * p.chDmg * (1 + .12 * (p.pass.dmg || 0)); }
 function areaMul(p){ return p.chArea * (1 + .12 * (p.pass.area || 0)); }
@@ -393,10 +579,11 @@ function hurtEnemy(e, dmg, crit, srcP){
 function killEnemy(e, srcP){
   e.dead = true;
   const killer = srcP || me; if (killer) killer.kills++;
+  runKills++; if (e.boss) runBosses++;
   sndDie();
   inkBurst(e.x, e.y, e.type === 'golem' ? '#111' : '#33a4a', e.boss ? 60 : e.type === 'golem' ? 30 : 9);
   const mult = 1 + .15 * (((killer || {}).pass || {}).xpup || 0);
-  pickups.push({ x: e.x, y: e.y, kind: 'xp', v: Math.max(1, Math.round(e.xp * mult)), life: 999, bob: rnd(0,7) });
+  dropXp(e.x, e.y, Math.max(1, Math.round(e.xp * mult)));
   if (e.type === 'golem'){
     for (let i = 0; i < 5; i++){ spawnEnemy('blob', false, e.x + rnd(-30,30), e.y + rnd(-30,30)); }
     pickups.push({ x: e.x + rnd(-14,14), y: e.y, kind: 'coffee', life: 999, bob: rnd(0,7) });
@@ -411,17 +598,20 @@ function killEnemy(e, srcP){
   if (!e.boss && Math.random() < .015) pickups.push({ x: e.x, y: e.y, kind: 'magnet', life: 999, bob: rnd(0,7) });
   if (!e.boss && Math.random() < .012) pickups.push({ x: e.x, y: e.y, kind: 'coffee', life: 999, bob: rnd(0,7) });
 }
+function dropXp(x, y, v){
+  if (pickups.length > 260){ const g = pickups[irnd(0, pickups.length - 1)]; if (g.kind === 'xp'){ g.v += v; return; } }
+  pickups.push({ x, y, kind: 'xp', v, life: 999, bob: rnd(0,7) });
+}
 function hurtPlayer(p, dmg){
-  if (!isHost() || p.dn > 0 || p.iframe > 0) return;
+  if (!isHost() || p.dn > 0 || p.out || p.iframe > 0) return;
   const red = 1 - Math.min(.4, .08 * (p.pass.glasses || 0));
   p.hp -= Math.max(1, dmg * red);
   p.iframe = .55; p.hitFlash = .3;
   if (p === me){ shake = Math.max(shake, 7); sndHurt(); }
   if (p.hp <= 0){
-    p.hp = 0;
-    const alive = alivePlayers().filter(q => q.hp > 0).length;
-    if (players.length === 1 || alive === 0){ p.dn = 15; if (players.length === 1){ st = 3; } }
-    else { p.dn = 15; p.rv = 0; bigEvent(p.name + ' IS DOWN — rescue them!', '#ffc857', p.x, p.y - 40); blip(90,.3,'sawtooth',.07,-40); }
+    p.hp = 0; p.dn = 15; p.rv = 0;
+    if (alivePlayers().length === 0) st = 3;
+    else { bigEvent(p.name + ' IS DOWN — rescue them!', '#ffc857', p.x, p.y - 40); blip(90,.3,'sawtooth',.07,-40); }
   }
 }
 
@@ -429,7 +619,7 @@ function hurtPlayer(p, dmg){
 function gainXp(p, v){
   p.xp += v;
   while (p.xp >= p.next){
-    p.xp -= p.next; p.level++;
+    p.xp -= p.next; p.level++; if (p.level > runMaxLvl) runMaxLvl = p.level;
     p.next = Math.round(p.next * 1.32);
     p.pending++;
   }
@@ -485,9 +675,10 @@ function buildSnap(){
     const wflat = [];
     for (const w of p.weapons){ wflat.push(WIDS.indexOf(w.id), w.lvl, Math.round(w.ang * 100) / 100); }
     return [p.id, Math.round(p.x), Math.round(p.y), Math.round(p.hp), Math.round(p.maxhp),
-            Math.round(p.face * 100) / 100, Math.round(p.dn * 10) / 10, Math.round((p.rv || 0) * 10) / 10,
+            Math.round(p.face * 100) / 100, p.out ? -1 : Math.round(p.dn * 10) / 10, Math.round((p.rv || 0) * 10) / 10,
             p.level, p.kills, Math.round(p.xp), p.next,
-            CHARS.findIndex(c => c.id === p.ch.id), wflat, p.pass.area || 0, p.name];
+            CHARS.findIndex(c => c.id === p.ch.id), wflat, p.pass.area || 0, p.name,
+            Math.round(p.speed * (1 + .08 * (p.pass.boots || 0)))];
   });
   S.e = enemies.map(e => [e.id, EIDS.indexOf(e.type), Math.round(e.x), Math.round(e.y), Math.round(e.hp)]);
   S.j = projs.map(pr => [Math.round(pr.x), Math.round(pr.y), ['cursor','toner','key'].indexOf(pr.kind), Math.round((pr.ang||0)*10)/10]);
@@ -508,11 +699,11 @@ function hostNetTick(dt){
     // dispatch card offers locally + remotely; game pauses while anyone is picking
     for (const p of players){
       if (p.pending > 0 && !p.offered){
-        p.offered = rollCards(p);
+        p.offered = rollCards(p); p.offT = 1.5;
         if (st === 0) st = 1;
         if (p === me) showCards(p.offered);
         else netSend({ k: 'cards', for: p.id, cards: p.offered });
-      }
+      } else if (p.offered && p !== me && (p.offT -= .05) <= 0){ p.offT = 1.5; netSend({ k: 'cards', for: p.id, cards: p.offered }); }
     }
     if (st === 1 && players.every(p => p.pending <= 0)) st = 0;
   }
@@ -539,7 +730,7 @@ function applySnap(S){
     // own player: light prediction, nudge toward authority
     if (id === myId){ me = p; if (Math.hypot(x - p.x, y - p.y) > 250){ p.x = x; p.y = y; } else { p.x += (x - p.x) * .25; p.y += (y - p.y) * .25; } }
     else { p.tx = x; p.ty = y; }
-    p.hp = hp; p.maxhp = mhp; p.dn = dn; p.level = lv; p.kills = kl; p.xp = xp; p.next = nx; p.face = face;
+    p.hp = hp; p.maxhp = mhp; p.dn = Math.max(0, dn); p.out = dn < 0; if (a[16]) p.speed = a[16]; p.level = lv; p.kills = kl; p.xp = xp; p.next = nx; p.face = face;
     p.weapons = [];
     for (let i = 0; i < wflat.length; i += 3) p.weapons.push({ id: WIDS[wflat[i]], lvl: wflat[i+1], ang: wflat[i+2] });
     p.pass.area = a[14];
@@ -578,7 +769,7 @@ function applySnap(S){
   for (const f of S.f){
     if (f[3] === 0) fx.push({ kind: 'cone', x: f[0], y: f[1], ang: f[2], life: .22, r: 150 });
     else if (f[3] === 1) zaps.push({ x: f[0], y: f[1], life: .16 });
-    else fx.push({ kind: 'zapring', x: f[0], y: f[1], life: .25, r: 40 });
+    else fx.push({ kind: 'zapring', x: f[0], y: f[1], life: .25, r: f[2] || 40 });
   }
   for (const ev of S.ev) texts.push({ x: ev[0], y: ev[1], s: ev[3], life: 2.2, c: ev[3].includes('DOWN') ? '#ffc857' : (ev[3].includes('⚠') ? '#ff5566' : '#7cfc9b'), big: !!ev[4] });
   syncOverlays();
@@ -586,7 +777,7 @@ function applySnap(S){
 function syncOverlays(){
   if (st === 2){ document.getElementById('winStats').innerHTML = statBlock(); document.getElementById('win').classList.remove('hidden'); }
   else document.getElementById('win').classList.add('hidden');
-  if (st === 3 && !cardsOpen()){ showDead('SIGNAL LOST', 'The printers won this shift. Ticket closed, unresolved.'); }
+  if (st === 3){ document.getElementById('levelup').classList.add('hidden'); showDead('SIGNAL LOST', 'The printers won this shift. Ticket closed, unresolved.'); }
   if (mode === 'client' && state === 'playing' && st === 1 && !cardsOpen() && me && me.pending > 0){} // card offer comes via 'cards' msg
 }
 // client also needs 'cards' relay + pick ack: extend hostMsg usage — client gets host broadcasts via netMsg relay:
@@ -598,11 +789,13 @@ function wireClientMsgs(){
 function statBlock(){
   const mins = Math.floor(t / 60), secs = Math.floor(t % 60);
   let rows = `<b>${Math.round(t)}s</b> survived · <b>${players.reduce((a,p)=>a+p.kills,0)}</b> printers destroyed<br>`;
-  for (const p of players) rows += `${p === me ? '▶ ' : ''}${p.name}: L${p.level} · ${p.kills} kills${p.dn > 0 ? ' · <span style="color:#ff5566">DOWNED</span>' : ''}<br>`;
+  for (const p of players) rows += `${p === me ? '▶ ' : ''}${escapeHtml(p.name)}: L${p.level} · ${p.kills} kills${p.out ? ' · <span style="color:#ff5566">OUT</span>' : p.dn > 0 ? ' · <span style="color:#ff5566">DOWNED</span>' : ''}<br>`;
   return rows;
 }
 function showDead(title, why){
   if (state === 'dead') return;
+  if (!hsSent || !isHost()) showRank(null);
+  document.getElementById('lobby').classList.add('hidden');
   state = 'dead';
   document.getElementById('deathTitle').textContent = title;
   document.getElementById('deadWhy').textContent = why;
@@ -610,51 +803,248 @@ function showDead(title, why){
   document.getElementById('dead').classList.remove('hidden');
 }
 function toStart(){
-  for (const id of ['dead','win','levelup']) document.getElementById(id).classList.add('hidden');
+  for (const id of ['dead','win','levelup','lobby']) document.getElementById(id).classList.add('hidden');
+  showStartStep();
   document.getElementById('start').classList.remove('hidden');
-  state = 'start'; mode = null; players = []; me = null; clientSnap = null;
+  state = 'start'; mode = null; players = []; me = null; clientSnap = null; netBusy = false; keys.clear();
+  myReady = false; lateJoin = false; lobbyList = [];
+  if (location.protocol.startsWith('http')) loadScores();
+  if (ws){ ws.onclose = ws.onerror = ws.onmessage = null; try { ws.close(); } catch(e){} ws = null; }
   document.getElementById('startErr').textContent = '';
 }
 window.toStart = toStart; window.netCmd = netCmd;
 
 /* ---------- start screen wiring ---------- */
-let pendingChar = null, pendingName = 'Admin';
+let pendingChar = null, pendingName = 'Admin', netBusy = false;
+let showStartStep = () => {};
+let myReady = false, lateJoin = false, lobbyList = [];
 (function initStart(){
-  const sel = document.getElementById('charSel');
+  const $ = id => document.getElementById(id);
+  const nameIn = $('nameIn'), codeIn = $('codeIn');
+  try { nameIn.value = localStorage.getItem('cad-name') || ''; } catch(e){}
+  try { const c = localStorage.getItem('cad-class'); if (CHARS.some(x => x.id === c)) pendingChar = c; } catch(e){}
+  if (!pendingChar) pendingChar = CHARS[0].id;
+  const qp = new URLSearchParams(location.search).get('join');
+  if (qp && /^[A-Za-z0-9]{4}$/.test(qp)) codeIn.value = qp.toUpperCase();
+  for (const el of document.querySelectorAll('.joinurl')) el.textContent = location.host ? 'http://' + location.host : 'this page';
+  const takeName = () => { pendingName = (nameIn.value.trim() || 'Admin').slice(0, 16); try { localStorage.setItem('cad-name', nameIn.value.trim()); } catch(e){} };
+  const status = t => { $('startStatus').textContent = t; };
+
+  // solo: classic character step
+  const sel = $('charSel');
   for (const ch of CHARS){
     const el = document.createElement('button');
     el.className = 'cardbtn';
     el.innerHTML = `<h3>${ch.name}</h3><div class="wpn">starts with: ${WDEF[ch.weapon].name}</div><p>${ch.perk}</p>`;
     el.onclick = () => {
-      audio();
-      pendingChar = ch.id;
-      pendingName = (document.getElementById('nameIn').value || 'Admin').slice(0, 16);
-      if (pendingMode === 'solo'){ document.getElementById('start').classList.add('hidden'); mode = 'solo'; st = 0; myId = hostId = 0; newRun(ch); state = 'playing'; }
-      else if (pendingMode === 'host'){ connectWS(() => { mode = 'host'; netSend({ t: 'hello', role: 'host', name: pendingName }); }); }
-      else { connectWS(() => { mode = 'client'; const code = (document.getElementById('codeIn').value || '').toUpperCase(); netSend({ t: 'hello', role: 'join', code, name: pendingName }); }); }
+      audio(); pendingChar = ch.id; rememberClass(); takeName();
+      $('start').classList.add('hidden'); mode = 'solo'; st = 0; myId = hostId = 0; newRun(ch); state = 'playing';
     };
     sel.appendChild(el);
   }
-  const showChars = m => { pendingMode = m;
-    document.getElementById('charSel').classList.remove('hidden');
-    document.getElementById('startHowto').classList.add('hidden');
+  showStartStep = () => { $('stepChar').classList.add('hidden'); $('stepMode').classList.remove('hidden'); status(''); };
+  $('btnSolo').onclick = () => {
+    takeName(); $('charWhat').textContent = '▶ SOLO SHIFT'; $('charSub').textContent = 'Pick your character';
+    $('stepMode').classList.add('hidden'); $('stepChar').classList.remove('hidden'); $('startErr').textContent = '';
   };
-  let pendingMode = 'solo';
-  document.getElementById('btnSolo').onclick = () => showChars('solo');
-  document.getElementById('btnHost').onclick = () => showChars('host');
-  document.getElementById('btnJoin').onclick = () => {
-    const code = (document.getElementById('codeIn').value || '').toUpperCase();
-    if (!/^[A-Z0-9]{4}$/.test(code)){ document.getElementById('startErr').textContent = 'enter the 4-letter room code first'; return; }
-    showChars('join');
+  $('btnBack').onclick = () => showStartStep();
+
+  // multiplayer: straight into the lobby, class is picked there
+  $('btnHost').onclick = () => {
+    if (netBusy) return; audio(); takeName(); $('startErr').textContent = '';
+    netBusy = true; status('creating lobby…');
+    connectWS(() => { mode = 'host'; netSend({ t: 'hello', role: 'host', name: pendingName }); });
   };
+  const tryJoin = () => {
+    if (netBusy) return;
+    const code = codeIn.value.trim().toUpperCase();
+    if (!/^[A-Z0-9]{4}$/.test(code)){ $('startErr').textContent = 'Enter the 4-letter room code shown on the host\'s screen.'; codeIn.focus(); return; }
+    audio(); takeName(); $('startErr').textContent = '';
+    netBusy = true; status('joining room ' + code + '…');
+    connectWS(() => { mode = 'client'; netSend({ t: 'hello', role: 'join', code, name: pendingName }); });
+  };
+  $('btnJoin').onclick = tryJoin;
+  codeIn.addEventListener('keydown', e => { if (e.key === 'Enter') tryJoin(); });
+  codeIn.addEventListener('input', () => { codeIn.value = codeIn.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
+
+  // lobby: class picker + ready + start
+  const pick = $('lobbyClasses');
+  CHARS.forEach((ch, i) => {
+    const el = document.createElement('button');
+    el.className = 'clsbtn'; el.dataset.cls = ch.id;
+    el.innerHTML = `<h3>${ch.name}</h3><div class="wpn">starts with: ${WDEF[ch.weapon].name} · ${ch.hp} HP</div><p>${ch.perk}</p>`;
+    el.onclick = () => lobbyPickClass(ch.id);
+    pick.appendChild(el);
+  });
+  $('btnReady').onclick = () => lobbyReady();
+  const toast = msg => { $('lobbyToast').textContent = msg; clearTimeout(toast.t); toast.t = setTimeout(() => $('lobbyToast').textContent = '', 2200); };
+  $('btnCopyLink').onclick = () => copyText(inviteLink(), () => toast('invite link copied — paste it into the team chat'));
+  $('btnCopyCode').onclick = () => copyText(roomCode, () => toast('code copied'));
+  $('btnStartShift').onclick = () => startShift();
+  $('btnLobbyLeave').onclick = () => toStart();
 })();
-// host/client: after welcome, hide menu and enter the run (clients build players from snapshots)
+function rememberClass(){ try { localStorage.setItem('cad-class', pendingChar); } catch(e){} }
+function inviteLink(){ return 'http://' + location.host + '/?join=' + roomCode; }
+function copyText(txt, done){
+  const fallback = () => { const ta = document.createElement('textarea'); ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch(e){} ta.remove(); done(); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(done, fallback); else fallback();
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+/* ---------- highscores ---------- */
+let hsData = null, hsTab = 'solo';
+const fmtT = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+async function loadScores(){
+  try { const r = await fetch('/api/highscores', { cache: 'no-store' }); if (r.ok) hsData = await r.json(); } catch(e){}
+  renderTeaser(); return hsData;
+}
+function renderTeaser(){
+  const el = document.getElementById('hsTeaser'); if (!el) return;
+  if (!hsData){ el.textContent = ''; return; }
+  const bits = [];
+  const s1 = hsData.solo[0], m1 = hsData.multi[0];
+  if (s1) bits.push(`best solo <b>${fmtT(s1.time)}</b> by ${escapeHtml(s1.players[0].n)}`);
+  if (m1) bits.push(`best team <b>${fmtT(m1.time)}</b> (${m1.players.length} admins)`);
+  el.innerHTML = bits.length ? bits.join(' &nbsp;·&nbsp; ') : 'no scores yet — be the first!';
+}
+function renderScores(){
+  const $ = id => document.getElementById(id);
+  for (const b of document.querySelectorAll('#scores .tab')) b.classList.toggle('on', b.dataset.tab === hsTab);
+  if (!hsData){ $('hsTable').innerHTML = '<tr><td class="hsempty">Highscores unavailable — is the game server reachable?</td></tr>'; return; }
+  const rows = hsData[hsTab] || [];
+  if (!rows.length){ $('hsTable').innerHTML = `<tr><td class="hsempty">No ${hsTab === 'solo' ? 'solo' : 'multiplayer'} scores yet. Go set one!</td></tr>`; return; }
+  const short = { sysadmin: 'Sysadmin', helpdesk: 'Helpdesk', devops: 'DevOps' };
+  let h = `<tr><th>#</th><th class="who">${hsTab === 'solo' ? 'ADMIN' : 'TEAM'}</th><th>TIME</th><th>KILLS</th><th>LVL</th><th>BOSS</th><th>DATE</th></tr>`;
+  rows.forEach((r, i) => {
+    const who = r.players.map(p => `${escapeHtml(p.n)}<span class="cls">${short[p.c] || p.c}</span>`).join(' &nbsp;· ');
+    const d = new Date(r.date);
+    h += `<tr class="r${i + 1}${r.id === myHsId ? ' mine' : ''}"><td class="rk">${i + 1}</td><td class="who">${who}</td><td><b>${fmtT(r.time)}</b></td><td>${r.kills}</td><td>${r.level}</td>`
+       + `<td>${r.bosses ? '☠'.repeat(Math.min(r.bosses, 3)) + (r.bosses > 3 ? '×' + r.bosses : '') : '–'}</td><td>${d.toLocaleDateString()}</td></tr>`;
+  });
+  $('hsTable').innerHTML = h;
+}
+async function openScores(tab){
+  if (tab) hsTab = tab;
+  document.getElementById('scores').classList.remove('hidden');
+  renderScores(); await loadScores(); renderScores();
+}
+window.openScores = openScores;
+function showRank(res){
+  const el = document.getElementById('deadRank');
+  if (!res){ el.className = 'rankline meh'; el.textContent = ''; return; }
+  myHsId = res.id || ''; if (res.list) hsTab = res.list;
+  const label = res.list === 'multi' ? 'MULTIPLAYER' : 'SOLO';
+  if (res.rank){ el.className = 'rankline new'; el.textContent = `🏆 NEW HIGHSCORE — #${res.rank} in ${label} top 20!`; }
+  else { el.className = 'rankline meh'; el.textContent = `Not in the ${label.toLowerCase()} top 20 this time.`; }
+  if (res.solo){ hsData = { solo: res.solo, multi: res.multi }; renderTeaser(); }
+}
+async function submitScore(){
+  if (hsSent || !isHost()) return;
+  hsSent = true;
+  const el = document.getElementById('deadRank');
+  if (t < 10){ el.className = 'rankline meh'; el.textContent = 'Shifts under 10 s don\'t count for the highscores.'; return; }
+  const run = { runId, time: Math.round(t), kills: runKills, level: runMaxLvl, bosses: runBosses, players: [...runRoster.values()] };
+  el.className = 'rankline meh'; el.textContent = 'submitting score…';
+  let res = null;
+  try { const r = await fetch('/api/highscores', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(run) }); if (r.ok) res = await r.json(); } catch(e){}
+  if (!res){ el.className = 'rankline meh'; el.textContent = location.protocol.startsWith('http') ? 'Could not save the score (server unreachable).' : ''; return; }
+  showRank(res);
+  if (mode === 'host') netSend({ k: 'hs', list: res.list, rank: res.rank, id: res.id });
+}
+(function initScores(){
+  document.getElementById('btnScores').onclick = () => openScores();
+  document.getElementById('btnScoresClose').onclick = () => document.getElementById('scores').classList.add('hidden');
+  for (const b of document.querySelectorAll('#scores .tab')) b.onclick = () => { hsTab = b.dataset.tab; renderScores(); };
+  addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('scores').classList.add('hidden'); });
+  if (location.protocol.startsWith('http')) loadScores();
+})();
+
+/* ---------- lobby ---------- */
+function setClass(p, ch){             // host: (re)equip a player while still in the lobby
+  p.ch = ch; p.speed = ch.spd * (ch.spdMul || 1); p.chArea = ch.areaMul || 1; p.chDmg = ch.dmgMul || 1;
+  p.hp = p.maxhp = ch.hp; p.weapons = [{ id: ch.weapon, lvl: 1, t: .4, ang: 0 }];
+}
+function lobbyPickClass(id){
+  if (state !== 'lobby') return;
+  pendingChar = id; rememberClass();
+  if (mode === 'host'){ if (me) setClass(me, CHARS.find(c => c.id === id)); lobbyUpdate(); }
+  else { if (!lateJoin) netSend({ k: 'cls', cid: CHARS.findIndex(c => c.id === id) }); renderLobby(lobbyList); }
+}
+function lobbyReady(){
+  if (state !== 'lobby' || mode !== 'client') return;
+  if (lateJoin){                       // shift already running: jump in with the chosen class
+    netSend({ k: 'j', cid: CHARS.findIndex(c => c.id === pendingChar), name: pendingName, late: 1 });
+    document.getElementById('btnReady').textContent = 'joining…'; return;
+  }
+  myReady = !myReady; netSend({ k: 'rdy', v: myReady ? 1 : 0 }); renderLobby(lobbyList);
+}
+function hostLobbyList(){ return players.map(p => [p.id, p.name, CHARS.findIndex(c => c.id === p.ch.id), p.id === myId ? 1 : (p.ready ? 1 : 0), p.id === myId ? 1 : 0]); }
+function renderLobby(list){
+  lobbyList = list;
+  const isH = mode === 'host', $ = id => document.getElementById(id);
+  $('lobbyCode').textContent = roomCode;
+  $('lobbyKicker').textContent = isH ? 'YOUR ROOM CODE' : 'ROOM CODE';
+  $('lobbyHint').innerHTML = isH
+    ? `Tell your colleagues: open <b class="url">http://${location.host}</b> → <b>JOIN A GAME</b> → enter <b>${roomCode}</b>.<br>Or send them the invite link — the code is filled in automatically.`
+    : lateJoin ? `The shift is <b>already running</b>. Pick your class and jump in.`
+               : `You're in! Pick your class, then click <b>I'M READY</b>. The host starts the shift.`;
+  $('copyRow').classList.toggle('hidden', !isH);
+  // player list
+  let html = '';
+  if (lateJoin) html = `<div class="slot">the others are already fighting printers…</div>`;
+  else {
+    for (const [id, n, cid, rdy, host] of list){
+      const mine = id === myId, ch = CHARS[cid] || CHARS[0];
+      const tag = host ? '<span class="tag host">HOST</span>' : rdy ? '<span class="tag rdy">✓ READY</span>' : '<span class="tag wait">not ready</span>';
+      html += `<div class="pl"><div class="pn"><span>${mine ? '▶ ' : ''}${escapeHtml(n)}${mine ? ' <span style="color:var(--dim)">(you)</span>' : ''}</span><small>${ch.name}</small></div>${tag}</div>`;
+    }
+    for (let i = list.length; i < 4; i++) html += `<div class="slot ${i === list.length ? 'pulse' : ''}">${i === list.length ? 'waiting for colleagues…' : '— free slot —'}</div>`;
+  }
+  $('lobbyList').innerHTML = html;
+  $('listHead').textContent = lateJoin ? 'SHIFT IN PROGRESS' : `ADMINS IN ROOM · ${list.length}/4`;
+  // own class (host: from own player; client: local choice)
+  const mineRow = list.find(r => r[0] === myId);
+  if (!lateJoin && mineRow && mode === 'host') pendingChar = (CHARS[mineRow[2]] || CHARS[0]).id;
+  for (const el of document.querySelectorAll('#lobbyClasses .clsbtn')) el.classList.toggle('sel', el.dataset.cls === pendingChar);
+  // ready / start
+  const rb = $('btnReady');
+  rb.classList.toggle('hidden', isH);
+  rb.classList.toggle('on', myReady && !lateJoin);
+  rb.textContent = lateJoin ? 'JOIN THE SHIFT ▶' : myReady ? '✓ READY — click to cancel' : "I'M READY ✓";
+  const sb = $('btnStartShift'); sb.classList.toggle('hidden', !isH);
+  const guests = list.filter(r => !r[4]), notReady = guests.filter(r => !r[3]).length;
+  sb.classList.toggle('notall', notReady > 0);
+  sb.textContent = guests.length === 0 ? 'START SHIFT (alone so far) ▶'
+                 : notReady === 0 ? `ALL READY — START SHIFT WITH ${list.length} ADMINS ▶`
+                 : `START ANYWAY (${notReady} not ready) ▶`;
+  $('lobbyWait').textContent = isH ? (notReady ? 'Waiting for everyone to click I\'M READY…' : 'Late joiners can still join after the start.')
+                                   : lateJoin ? '' : (myReady ? 'Waiting for the host to start…' : 'You can still switch class.');
+  $('lobbyWait').classList.toggle('pulse', !isH && myReady);
+}
+function lobbyUpdate(){               // host: refresh own lobby + tell clients
+  if (mode !== 'host' || state !== 'lobby') return;
+  const list = hostLobbyList();
+  renderLobby(list);
+  netSend({ k: 'lobby', list });
+}
+function startShift(){
+  if (mode !== 'host' || state !== 'lobby') return;
+  document.getElementById('lobby').classList.add('hidden');
+  for (const p of players) p.ready = false;
+  runRoster = new Map(players.map(p => [p.id, { n: p.name, c: p.ch.id }]));
+  st = 0; lastSim = performance.now(); state = 'playing';
+}
+// host/client: after welcome -> lobby
 function afterWelcome(){
   document.getElementById('start').classList.add('hidden');
-  document.getElementById('charSel').classList.add('hidden');
-  st = 0;
-  if (isHost()) newRun(CHARS.find(c => c.id === pendingChar));
-  state = 'playing';
+  showStartStep(); netBusy = false;
+  st = 0; myReady = false; lateJoin = false;
+  if (isHost()) newRun(CHARS.find(c => c.id === pendingChar) || CHARS[0]);
+  state = 'lobby';
+  document.getElementById('lobby').classList.remove('hidden');
+  if (mode === 'host') lobbyUpdate();
+  else renderLobby([[myId, pendingName, CHARS.findIndex(c => c.id === pendingChar), 0, 0]]);
 }
 
 /* ---------- update (host authoritative sim) ---------- */
@@ -696,7 +1086,7 @@ function fireWeapon(p, w){
     case 'toner': { const n = 3 + (l >= 3 ? 1 : 0) + (l >= 5 ? 1 : 0);
       for (let i = 0; i < n; i++) addProj(p, p.x, p.y, ang + rnd(-.32, .32), rnd(260, 340), wDmg(p, 7 + (l-1)*2), .38, 'toner', 5, 0, 0);
       if (p === me) sndShot(); break; }
-    case 'keyboard': { const a2 = ang; projs.push({ x: p.x, y: p.y, vx: Math.cos(a2)*380, vy: Math.sin(a2)*380, dmg: wDmg(p, 20 + (l-1)*7), life: 1.5, kind: 'key', r: 11, pierce: 99, hit: [], home: 0, boomer: true, phase: 0, ang: a2 });
+    case 'keyboard': { const a2 = ang; projs.push({ x: p.x, y: p.y, vx: Math.cos(a2)*380, vy: Math.sin(a2)*380, dmg: wDmg(p, 20 + (l-1)*7), life: 1.5, kind: 'key', r: 11, pierce: 99, hit: [], home: 0, boomer: true, phase: 0, ang: a2, own: p });
       if (p === me) sndShot(); break; }
     case 'ping': {
       const cands = enemies.filter(e => e.hp > 0 && dist(p.x, p.y, e.x, e.y) < 520).sort((a,b) => dist(p.x,p.y,a.x,a.y) - dist(p.x,p.y,b.x,b.y)).slice(0, 1 + l);
@@ -737,7 +1127,8 @@ function update(dt){
 
   for (const p of players){
     let inp;
-    if (p.dn > 0){ p.dn -= dt; p.rv += 0; if (p.dn <= 0){ p.hp = 0; stAllCheck(); } movePlayer(p, 0, 0, dt); continue; }
+    if (p.out) continue;
+    if (p.dn > 0){ p.dn -= dt; if (p.dn <= 0){ p.dn = 0; p.hp = 0; p.out = true; bigEvent(p.name + ' is OUT for this shift', '#ff5566', p.x, p.y - 40); stAllCheck(); } movePlayer(p, 0, 0, dt); continue; }
     if (p === me && mode !== 'client') inp = readLocalInput();
     else inp = p.in || { mx: 0, my: 0 };
     movePlayer(p, inp.mx, inp.my, dt);
@@ -780,7 +1171,7 @@ function update(dt){
   fxCleanup(dt);
 }
 function stAllCheck(){
-  if (players.every(p => p.dn > 0 || p.hp <= 0)) st = 3;
+  if (players.length && alivePlayers().length === 0) st = 3;
 }
 function updateEnemies(dt){
   for (const e of enemies){
@@ -815,7 +1206,7 @@ function updateEnemies(dt){
     e.y = clamp(e.y + (vy + e.ky) * dt, 10, ARENA_H - 10);
     e.kx *= Math.pow(.0001, dt); e.ky *= Math.pow(.0001, dt);
     for (const p of players){
-      if (p.dn > 0) continue;
+      if (p.dn > 0 || p.out) continue;
       if (dist(e.x, e.y, p.x, p.y) < e.r + p.r) hurtPlayer(p, e.dmg);
     }
     if (e.hp <= 0 && !e.dead) killEnemy(e); // safety (ping kills flagged already)
@@ -839,7 +1230,7 @@ function updateProjectiles(dt){
     for (const e of enemies){
       if (e.hp <= 0 || p.hit.includes(e)) continue;
       if (dist(p.x, p.y, e.x, e.y) < p.r + e.r){
-        hurtEnemy(e, p.dmg, false, me); p.hit.push(e);
+        hurtEnemy(e, p.dmg, false, p.own || me); p.hit.push(e);
         if (p.pierce <= 0){ p.life = 0; break; }
         p.pierce--;
       }
@@ -849,13 +1240,14 @@ function updateProjectiles(dt){
   for (const p of eprojs){
     p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt;
     for (const pl of players){
-      if (pl.dn > 0) continue;
+      if (pl.dn > 0 || pl.out) continue;
       if (dist(p.x, p.y, pl.x, pl.y) < p.r + pl.r){ hurtPlayer(pl, p.dmg); p.life = 0; break; }
     }
   }
   eprojs = eprojs.filter(p => p.life > 0);
   // badge orbit contact (host)
   for (const p of players){
+    if (p.out) continue;
     for (const w of p.weapons){
       if (w.id !== 'badge') continue;
       const n = 1 + w.lvl, R = 78 * areaMul(p);
@@ -897,7 +1289,7 @@ function clientTick(dt){
   for (const u of pickups){ u.bob += dt * 3; u.x += (u.tx - u.x) * es; u.y += (u.ty - u.y) * es; }
   for (const p of players){ if (p !== me){ p.x += (p.tx - p.x) * es; p.y += (p.ty - p.y) * es; } }
   // own movement prediction
-  if (me && me.dn <= 0){ const i = readLocalInput(); if (i.mx || i.my){ const m = Math.hypot(i.mx, i.my); me.x += (i.mx/m) * me.speed * dt; me.y += (i.my/m) * me.speed * dt; me.face = Math.atan2(i.my, i.mx); } }
+  if (me && me.dn <= 0 && !me.out){ const i = readLocalInput(); if (i.mx || i.my){ const m = Math.hypot(i.mx, i.my); me.x += (i.mx/m) * me.speed * dt; me.y += (i.my/m) * me.speed * dt; me.face = Math.atan2(i.my, i.mx); } }
   fxCleanup(dt);
 }
 
@@ -945,7 +1337,7 @@ function drawPrinter(x, y, e){
 function drawAdmin(x, y, p, isMe){
   const hood = HOOD[p.ch.id] || '#3a6ea5';
   ctx.save(); ctx.translate(x, y);
-  if (p.dn > 0){ ctx.globalAlpha = .45; ctx.rotate(Math.PI / 2); }
+  if (p.dn > 0 || p.out){ ctx.globalAlpha = p.out ? .25 : .45; ctx.rotate(Math.PI / 2); }
   else if (p.hitFlash > 0 && Math.floor(p.hitFlash * 20) % 2) ctx.globalAlpha = .5;
   ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(0, 14, 13, 5, 0, 0, 7); ctx.fill();
   ctx.fillStyle = hood; ctx.beginPath(); ctx.roundRect(-11, -6, 22, 20, 6); ctx.fill();
@@ -982,10 +1374,10 @@ function drawAdmin(x, y, p, isMe){
   // name tag
   ctx.textAlign = 'center'; ctx.font = '700 10px ui-monospace,monospace';
   ctx.fillStyle = isMe ? '#7cfc9b' : '#54c8ff';
-  const label = p.dn > 0 ? p.name + ' DOWN ' + Math.ceil(p.dn) : p.name;
+  const label = p.out ? p.name + ' OUT' : p.dn > 0 ? p.name + ' DOWN ' + Math.ceil(p.dn) : p.name;
   ctx.fillText(label, x, y - 26);
   ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(x - 14, y - 23, 28, 3);
-  ctx.fillStyle = p.dn > 0 ? '#ff5566' : (isMe ? '#7cfc9b' : '#54c8ff');
+  ctx.fillStyle = (p.dn > 0 || p.out) ? '#ff5566' : (isMe ? '#7cfc9b' : '#54c8ff');
   ctx.fillRect(x - 14, y - 23, 28 * clamp(p.hp / p.maxhp, 0, 1), 3);
   if (p.dn > 0 && p.rv > 0){
     ctx.strokeStyle = '#7cfc9b'; ctx.lineWidth = 2;
@@ -1099,22 +1491,24 @@ function render(){
   const hpw = 210;
   ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(14, 14, hpw + 4, 20);
   ctx.fillStyle = me.dn > 0 ? '#553344' : '#ff5566'; ctx.fillRect(16, 16, hpw * clamp(me.hp/me.maxhp, 0, 1), 16);
-  ctx.fillStyle = '#fff'; ctx.fillText(me.dn > 0 ? `DOWNED — rescue! ${Math.ceil(me.dn)}s` : `HP ${Math.ceil(me.hp)}/${Math.round(me.maxhp)}`, 20, 30);
+  ctx.fillStyle = '#fff'; ctx.fillText(me.out ? 'OUT — spectating your team' : me.dn > 0 ? `DOWNED — rescue! ${Math.ceil(me.dn)}s` : `HP ${Math.ceil(me.hp)}/${Math.round(me.maxhp)}`, 20, 30);
   ctx.textAlign = 'center'; ctx.font = '700 20px ui-monospace,monospace';
   ctx.fillStyle = '#e8ecf5'; ctx.fillText(fmtTime(), W/2, 30);
   if (mode !== 'solo'){
     ctx.font = '700 11px ui-monospace,monospace'; ctx.fillStyle = '#7cfc9b';
     ctx.fillText(`ROOM ${roomCode} · ${players.length} admin${players.length > 1 ? 's' : ''} · ${mode === 'host' ? 'YOU HOST' : 'client'}`, W/2, 46);
+    if (mode === 'host' && players.length < 4){ ctx.textAlign = 'right'; ctx.font = '700 11px ui-monospace,monospace'; ctx.fillStyle = 'rgba(124,252,155,.75)';
+      ctx.fillText(`late join: ${location.host} · code ${roomCode}`, W - 16, H - 22); ctx.textAlign = 'center'; }
   }
   ctx.textAlign = 'right'; ctx.font = '700 11px ui-monospace,monospace';
   let ry = 26;
   for (const p of players){ ctx.fillStyle = p === me ? '#7cfc9b' : '#8a93a8'; ctx.fillText(`${p.name}: ${p.kills}⌫ L${p.level}`, W - 16, ry); ry += 14; }
   let wx2 = 16; ctx.textAlign = 'left';
   for (const w of me.weapons){
-    ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(wx2, H - 40, 26, 26);
-    drawWeaponGlyph(wx2 + 13, H - 27, w.id);
+    ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(wx2, H - 58, 26, 26);
+    drawWeaponGlyph(wx2 + 13, H - 45, w.id);
     ctx.fillStyle = '#7CFC9B'; ctx.font = '700 9px ui-monospace,monospace';
-    ctx.fillText('▮'.repeat(w.lvl), wx2 + 1, H - 8);
+    ctx.fillText('▮'.repeat(w.lvl), wx2 + 1, H - 24);
     wx2 += 32;
   }
   const xpw = W - 40;
@@ -1136,6 +1530,7 @@ function render(){
     ctx.font = '700 30px ui-monospace,monospace'; ctx.fillText('PAUSED', W/2, H/2 - 8);
     ctx.font = '400 14px ui-monospace,monospace'; ctx.fillStyle = '#8a93a8';
     ctx.fillText(mode === 'host' ? 'press P to resume your shift' : 'the hosting admin paused the shift', W/2, H/2 + 22);
+    if (mode !== 'solo'){ ctx.fillStyle = '#7cfc9b'; ctx.fillText(`room code ${roomCode} · join at http://${location.host}`, W/2, H/2 + 46); }
   }
 }
 
@@ -1145,7 +1540,16 @@ const _netMsg = netMsg;
 netMsg = function(m){
   if (m.t === 'relay' && mode === 'client'){
     const d = m.data;
-    if (d && d.k === 's') applySnap(d);
+    if (d && d.k === 's'){
+      if (state === 'lobby'){
+        if (!d.p.some(a => a[0] === myId)) return;          // not in the game yet (late joiner still picking)
+        document.getElementById('lobby').classList.add('hidden'); state = 'playing'; lastSim = performance.now();
+      }
+      if (state === 'playing') applySnap(d);
+    }
+    else if (d && d.k === 'lobby' && state === 'lobby' && !lateJoin) renderLobby(d.list);
+    else if (d && d.k === 'hs'){ showRank(d); loadScores(); }
+    else if (d && d.k === 'running' && d.for === myId && state === 'lobby'){ lateJoin = true; renderLobby([]); }
     else if (d && d.k === 'cards' && d.for === myId) clientCards(d);
     return;
   }
@@ -1178,7 +1582,12 @@ function hostStateUI(){
   lastSt = st;
   if (st === 2){ document.getElementById('winStats').innerHTML = statBlock(); document.getElementById('win').classList.remove('hidden'); }
   else document.getElementById('win').classList.add('hidden');
-  if (st === 3) showDead('SIGNAL LOST', 'The printers won this shift. Ticket closed, unresolved.');
+  if (st === 3){
+    if (mode === 'host'){ netSend(buildSnap()); netEvents.h = []; netEvents.f = []; netEvents.ev = []; }   // clients must learn about the game over
+    document.getElementById('levelup').classList.add('hidden');
+    showDead('SIGNAL LOST', 'The printers won this shift. Ticket closed, unresolved.');
+    submitScore();
+  }
 }
 function loop(now){
   if (!workerDrives) simStep();          // fallback: rAF drives the sim when no worker
@@ -1192,10 +1601,6 @@ netMsg = function(m){
   _netMsg2(m);
   if (m.t === 'welcome' && (mode === 'host' || mode === 'client')){
     afterWelcome();
-    if (mode === 'host'){
-      document.getElementById('roomInfo').classList.remove('hidden');
-      document.getElementById('roomInfo').innerHTML = `ROOM <b>${roomCode}</b> — others open <b>http://${location.host}</b> and join with the code`;
-    }
   }
 };
 </script>

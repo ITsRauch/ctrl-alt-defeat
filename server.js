@@ -16,15 +16,77 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.
   '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon',
   '.json': 'application/json' };
 
-/* ---------------- HTTP static ---------------- */
+/* ---------------- highscores (stored in data/highscores.json) ---------------- */
+const DATA_DIR = path.join(ROOT, 'data');
+const HS_FILE = path.join(DATA_DIR, 'highscores.json');
+const HS_MAX = 20;
+const CLASSES = ['sysadmin', 'helpdesk', 'devops'];
+let hs = { solo: [], multi: [] };
+try {
+  const d = JSON.parse(fs.readFileSync(HS_FILE, 'utf8'));
+  if (Array.isArray(d.solo) && Array.isArray(d.multi)) hs = d;
+} catch (e) { if (e.code !== 'ENOENT') console.error('highscores unreadable, starting fresh:', e.message); }
+function saveHs() {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  const tmp = HS_FILE + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(hs, null, 1));
+  fs.renameSync(tmp, HS_FILE);                      // atomic replace
+}
+const hsSort = (a, b) => (b.time - a.time) || (b.kills - a.kills) || (a.date - b.date);
+const seenRuns = new Set(), lastPost = new Map();
+const RATE_MS = +(process.env.HS_RATE_MS || 3000);   // min. gap between score posts per IP
+function validRun(r) {
+  const int = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
+  if (!r || typeof r !== 'object') return null;
+  if (typeof r.runId !== 'string' || !/^[a-z0-9]{8,32}$/.test(r.runId)) return null;
+  if (!int(r.time, 10, 6 * 3600) || !int(r.kills, 0, 1e6) || !int(r.level, 1, 999) || !int(r.bosses, 0, 999)) return null;
+  if (!Array.isArray(r.players) || r.players.length < 1 || r.players.length > 4) return null;
+  const players = [];
+  for (const p of r.players) {
+    if (!p || typeof p.n !== 'string' || !CLASSES.includes(p.c)) return null;
+    const n = p.n.replace(/[\u0000-\u001f]/g, '').trim().slice(0, 16) || 'Admin';
+    players.push({ n, c: p.c });
+  }
+  return { id: r.runId, time: r.time, kills: r.kills, level: r.level, bosses: r.bosses, players, date: Date.now() };
+}
+function sendJson(res, code, obj) {
+  res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+  res.end(JSON.stringify(obj));
+}
+function handleApi(req, res) {
+  if (req.method === 'GET') return sendJson(res, 200, hs);
+  if (req.method !== 'POST') return sendJson(res, 405, { error: 'method' });
+  const ip = req.socket.remoteAddress || '?', now = Date.now();
+  if (now - (lastPost.get(ip) || 0) < RATE_MS) return sendJson(res, 429, { error: 'slow down' });
+  lastPost.set(ip, now);
+  let body = '', tooBig = false;
+  req.on('data', c => { body += c; if (body.length > 4096) { tooBig = true; req.destroy(); } });
+  req.on('end', () => {
+    if (tooBig) return;
+    let r; try { r = validRun(JSON.parse(body)); } catch (e) { r = null; }
+    if (!r) return sendJson(res, 400, { error: 'invalid run' });
+    if (seenRuns.has(r.id)) return sendJson(res, 409, { error: 'already submitted' });
+    seenRuns.add(r.id);
+    const list = r.players.length > 1 ? 'multi' : 'solo';
+    hs[list].push(r); hs[list].sort(hsSort); hs[list] = hs[list].slice(0, HS_MAX);
+    const rank = hs[list].findIndex(e => e.id === r.id) + 1 || null;
+    if (rank) { try { saveHs(); } catch (e) { console.error('highscore save failed:', e.message); } }
+    console.log(`score ${list} ${r.time}s ${r.kills} kills [${r.players.map(p => p.n).join(', ')}] -> ${rank ? '#' + rank : 'not ranked'}`);
+    sendJson(res, 200, { ok: true, list, rank, id: r.id, ...hs });
+  });
+}
+
+/* ---------------- HTTP: API + static (only the game page is served) ---------------- */
+const PUBLIC = new Set(['/index.html']);
 const server = http.createServer((req, res) => {
-  let p = decodeURIComponent((req.url || '/').split('?')[0]);
+  let p; try { p = decodeURIComponent((req.url || '/').split('?')[0]); } catch (e) { res.writeHead(400); return res.end('bad url'); }
+  if (p === '/api/highscores') return handleApi(req, res);
   if (p === '/') p = '/index.html';
+  if (!PUBLIC.has(p)) { res.writeHead(404); return res.end('not found'); }
   const file = path.join(ROOT, p);
-  if (!file.startsWith(ROOT)) { res.writeHead(403); return res.end('nope'); }
   fs.readFile(file, (err, buf) => {
     if (err) { res.writeHead(404); return res.end('not found'); }
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
+    res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
     res.end(buf);
   });
 });
@@ -69,6 +131,7 @@ function makeParser(onFrame) {
 }
 
 /* ---------------- rooms / relay ---------------- */
+const MAX_PLAYERS = 4;
 const rooms = new Map();   // CODE -> { host: conn, conns: Map(id->conn), nextId }
 const clients = new Set();
 let nextRoomCode = '';
@@ -105,19 +168,30 @@ server.on('upgrade', (req, socket) => {
     if (!clients.has(c)) return;
     clients.delete(c);
     try { socket.destroy(); } catch (e) {}
-    if (c.room) {
-      const room = c.room; c.room = null;
-      room.conns.delete(c.id);
-      if (c.id === room.hostId) {           // host left -> close room, notify clients
-        for (const oc of room.conns.values()) send(oc, { t: 'hostleft' });
-        rooms.delete(room.code);
-      }
-    }
+    leaveRoom(c);
   }
 });
 
+function leaveRoom(c) {
+  const room = c.room;
+  if (!room) return;
+  c.room = null;
+  room.conns.delete(c.id);
+  if (c.id === room.hostId) {               // host left -> close room, notify clients
+    for (const oc of room.conns.values()) { send(oc, { t: 'hostleft' }); oc.room = null; }
+    rooms.delete(room.code);
+    console.log(`room ${room.code} closed`);
+  } else {
+    const host = room.conns.get(room.hostId);
+    if (host) send(host, { t: 'relay', from: c.id, data: { k: 'peer-leave', id: c.id } });
+    console.log(`left ${room.code}: id ${c.id}`);
+  }
+}
+
 function handle(c, m) {
+  if (!m || typeof m !== 'object') return;
   if (m.t === 'hello') {
+    leaveRoom(c);                           // re-host / re-join on the same socket
     if (m.role === 'host') {
       const code = newCode();
       const room = { code, conns: new Map(), nextId: 1, hostId: 0 };
@@ -131,21 +205,26 @@ function handle(c, m) {
       const code = String(m.code || '').toUpperCase();
       const room = rooms.get(code);
       if (!room) { send(c, { t: 'err', msg: 'room ' + code + ' not found' }); return; }
+      if (room.conns.size >= MAX_PLAYERS) { send(c, { t: 'err', msg: 'room ' + code + ' is full' }); return; }
       c.id = room.nextId++;
       room.conns.set(c.id, c);
       c.room = room;
       send(c, { t: 'welcome', id: c.id, role: 'client', code, hostId: room.hostId });
-      relay(room, { k: 'peer-join', id: c.id }, c.id);
+      const host = room.conns.get(room.hostId);
+      if (host) send(host, { t: 'relay', from: c.id, data: { k: 'peer-join', id: c.id } });
       console.log(`joined ${code}: id ${c.id}`);
     }
   } else if (c.room && m.k !== undefined) {
-    // game message (k = kind) from host or client: relay to everyone else in room
-    relay(c.room, m, c.id);
+    // host -> all clients; client -> host only (clients don't need each other's input)
+    if (c.id === c.room.hostId) relay(c.room, m, c.id);
+    else { const host = c.room.conns.get(c.room.hostId); if (host) send(host, { t: 'relay', from: c.id, data: m }); }
   }
 }
 
+process.on('uncaughtException', e => console.error('uncaught:', e));
 server.listen(PORT, () => {
   console.log('CTRL-ALT-DEFEAT MP server up');
   console.log('  open   http://THIS-IP:' + PORT);
-  console.log('  e.g.   http://' + (require('os').networkInterfaces ? '192.168.x.x' + ':' + PORT : ''));
+  for (const ifs of Object.values(require('os').networkInterfaces()))
+    for (const i of ifs || []) if (i.family === 'IPv4' && !i.internal) console.log('  e.g.   http://' + i.address + ':' + PORT);
 });
