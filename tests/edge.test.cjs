@@ -29,7 +29,7 @@ const ok = (c, m) => console.log((c ? 'PASS ' : 'FAIL ') + m);
     }
     const st = await P.evaluate(`JSON.stringify({lv: me.level, maxhp: me.maxhp, kills: me.kills, w: me.weapons.length, t: Math.round(t)})`);
     await die(P); const v = await verdict(P);
-    ok(!v.includes('INTEGRITY') && v.includes('SOLO'), `maxed legit build (${st}) not flagged: ${v}`);
+    ok(!v.includes('INTEGRITY') && !v.includes('verifying'), `maxed legit build (${st}) not flagged: ${v}`);
     const P2 = await solo('Sprinter', 1);
     await P2.evaluate(`me.pass.boots = 5`);
     await P2.keyboard.down('ArrowRight'); await P2.keyboard.down('ArrowDown'); await P2.waitForTimeout(4000); await P2.keyboard.up('ArrowRight'); await P2.keyboard.up('ArrowDown');
@@ -47,7 +47,8 @@ const ok = (c, m) => console.log((c ? 'PASS ' : 'FAIL ') + m);
     await P.evaluate(`if (boss){ boss.hp = 5; boss.x = me.x + 70; boss.y = me.y; }`);
     for (let i = 0; i < 20 && !(await P.isVisible('#win')); i++) { await P.evaluate(keepAlive); await P.waitForTimeout(300); }
     ok(await P.isVisible('#win'), 'win screen after boss kill');
-    await P.click('#win .bigbtn'); await P.waitForTimeout(3000);
+    await P.click('#win .bigbtn');
+    for (let i = 0; i < 20; i++){ await P.evaluate(keepAlive); await P.waitForTimeout(150); }   // pick the boss-XP level-up cards
     ok(await P.evaluate('endless && st === 0 && !boss'), 'NIGHT SHIFT ++ continues without instant 2nd boss (bossT fix)');
     await P.evaluate(keepAlive); await die(P); const v = await verdict(P);
     const hs = await (await fetch(U + '/api/highscores')).json(); const e = hs.solo.find(x => x.players[0].n === 'BossRun');

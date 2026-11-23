@@ -41,6 +41,11 @@ nothing is stored, the reason is shown to everyone and logged (`INTEGRITY FAIL .
 This stops DevTools number tweaking; someone forging whole snapshots by script can still get through.
 The limits live in `server.js` (`CLS`, `WDMG`, ...) and must be updated when balancing changes.
 
+## Field manual
+**📖 FIELD MANUAL** in the menu: all printers (stats, behaviour, when they appear), weapons (level 1 → 5,
+which patches boost them), patches, pickups and admin classes. Values are read from the game data
+(`EDEF`, `WDEF`, `PDEF`, `CHARS`), icons use the in-game sprites; behaviour texts live in `MAN_E` / `MAN_BOOST`.
+
 ## Helpdesk tickets
 **🎫 HELPDESK** in the menu: everybody can open tickets (bug / feature / other, priority) and comment.
 Admins change status (NEW / IN PROGRESS / RESOLVED / WON'T FIX) and delete tickets.
@@ -63,6 +68,7 @@ The game itself has **no dependencies**. The tests drive real headless Chrome in
     npx playwright install chromium        # or: export CHROME=/path/to/chrome
     npm test                               # api, ui/regression, anti-cheat, endless boss  (~2 min)
     npm run test:edge                      # maxed builds + real 150 s boss run  (~3 min)
+    npm run lab                            # power-up lab: DPS per weapon level/passive, passive effects
 
 Run them after every change to `index.html` / `server.js`, especially balancing changes:
 the anti-cheat limits in `server.js` (`CLS`, `WDMG`, ...) must match the game constants.
@@ -76,4 +82,4 @@ Copy `index.html`, `server.js` (and `compose.yaml`/`Dockerfile` if changed) to
 - `index.html` — the whole game (host + client logic, lobby, highscores, helpdesk UI) in one page
 - `server.js` — static server, WebSocket room relay, anti-cheat witness, highscore/ticket/admin API
 - `Dockerfile`, `compose.yaml`, `.dockerignore` — hardened container as deployed on the LAN server
-- `tests/` — headless-browser and API test suites (dev only)
+- `tests/` — headless-browser and API test suites, `powerups.lab.cjs` balance lab (dev only)

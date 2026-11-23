@@ -128,11 +128,24 @@
   .bigbtn.notall{background:transparent;color:var(--amber);border:2px solid var(--amber)}
   .lobbyactions{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:16px}
   /* --- highscores --- */
+  #manual{z-index:7;background:rgba(12,14,20,.99)}
+  .mancards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;width:min(1080px,94vw);
+    max-height:min(62vh,600px);overflow-y:auto;text-align:left;padding:2px 4px 2px 0}
+  .mcard{display:flex;gap:12px;background:var(--panel);border:1px solid #2a3248;border-radius:12px;padding:12px}
+  .mcard canvas{flex:0 0 64px;width:64px;height:64px;background:#171b26;border-radius:10px}
+  .mcard .emo{flex:0 0 64px;height:64px;display:flex;align-items:center;justify-content:center;font-size:30px;background:#171b26;border-radius:10px}
+  .mcard h3{margin:0 0 2px;font-size:14px;color:var(--lime)}
+  .mcard .mtags{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 5px}
+  .mcard p{margin:0;font-size:12px;color:var(--dim);line-height:1.5}
+  .mcard .mst{font-size:11px;color:var(--cyan);margin-top:5px;line-height:1.55}
+  .mcard .mst b{color:var(--ink);font-weight:400}
+  .mannote{font-size:11px;color:var(--dim);margin:10px 0 0;max-width:min(1080px,94vw);line-height:1.6}
+  .manbtn{border-color:var(--lime)!important;color:var(--lime)!important;font-weight:700}
   .rankline.bad{color:var(--red);font-size:13px;max-width:680px;line-height:1.5}
   .deskbtn{border-color:var(--cyan)!important;color:var(--cyan)!important;font-weight:700}
   .linkbtn{background:none;border:none;color:var(--dim);font-family:inherit;font-size:12px;cursor:pointer;margin-top:8px;text-decoration:underline}
   .linkbtn:hover{color:var(--ink)}
-  #desk,#scores{z-index:7;background:rgba(12,14,20,.97)} #adminbox{z-index:8;background:rgba(12,14,20,.96)}
+  #desk,#scores{z-index:7;background:rgba(12,14,20,.99)} #adminbox{z-index:8;background:rgba(12,14,20,.96)}
   .desksub{color:var(--dim);font-size:12px;margin:-2px 0 12px}
   .deskbar{display:flex;gap:10px;align-items:center;justify-content:space-between;width:min(1040px,94vw);margin-bottom:10px;flex-wrap:wrap}
   .deskbar .tabs{margin:0}
@@ -227,6 +240,7 @@
       <div class="hsrow">
         <button class="mbtn hsbtn" id="btnScores">🏆 HIGHSCORES</button>
         <button class="mbtn deskbtn" id="btnDesk">🎫 HELPDESK</button>
+        <button class="mbtn manbtn" id="btnManual">📖 FIELD MANUAL</button>
         <span class="teaser" id="hsTeaser"></span>
       </div>
       <div class="guide">
@@ -285,6 +299,18 @@
     <div class="hsnote">Top 20 · ranked by time survived, then printers destroyed · stored on the server</div>
     <div class="hswrap"><table class="hs" id="hsTable"></table></div>
     <div style="display:flex;gap:10px;align-items:center;margin-top:10px"><button class="ghostbtn" id="btnScoresClose" style="margin:0">close</button><button class="backbtn adminbtn">🔑 admin</button></div>
+  </div>
+
+  <div id="manual" class="overlay hidden">
+    <h1 style="font-size:28px">📖 FIELD MANUAL</h1>
+    <div class="desksub">Know your enemy. Know your gear. Everything the printers don't want you to read.</div>
+    <div class="tabs" id="manTabs">
+      <button class="tab" data-m="printers">🖨 PRINTERS</button><button class="tab" data-m="weapons">⚔ WEAPONS</button>
+      <button class="tab" data-m="patches">⬆ PATCHES</button><button class="tab" data-m="pickups">✚ PICKUPS</button><button class="tab" data-m="admins">☺ ADMINS</button>
+    </div>
+    <div class="mancards" id="manCards"></div>
+    <div class="mannote" id="manNote"></div>
+    <button class="ghostbtn" id="btnManualClose">close</button>
   </div>
 
   <div id="desk" class="overlay hidden">
@@ -418,7 +444,7 @@ const WDEF = {
   toner:    { name: 'Toner Spray',      desc: 'Shotgun blast of cursed toner.', cd: 1.3, stats: l => `${3+(l>=3?1:0)+(l>=5?1:0)} pellets · dmg ${7+(l-1)*2}` },
   shout:    { name: 'Helpdesk Shout',   desc: '"Have you tried turning it off?" Damaging aura.', cd: 5, stats: l => `dmg ${4+(l-1)*2} · r ${90+(l-1)*20}` },
   badge:    { name: 'ID Badge Orbit',   desc: 'Your badge circles you, smacking firmware.', cd: 5, stats: l => `${1+l} badges · dmg ${10+(l-1)*3}` },
-  ping:     { name: 'Ping Storm',       desc: 'Lightning strikes random nearby printers.', cd: 1.6, stats: l => `${1+l} strikes · dmg ${22+(l-1)*6}` },
+  ping:     { name: 'Ping Storm',       desc: 'Lightning strikes the nearest printers and splashes around them.', cd: 1.6, stats: l => `${1+l} strikes · dmg ${22+(l-1)*6}` },
   keyboard: { name: 'Keyboard Boomerang', desc: 'Mechanical keyboard flies out, piercing everything.', cd: 1.4, stats: l => `dmg ${20+(l-1)*7} · pierces` },
   whip:     { name: 'Ethernet Whip',    desc: 'Cracks a cable in a wide cone.', cd: 1.1, stats: l => `dmg ${24+(l-1)*7} · cone` },
 };
@@ -426,10 +452,10 @@ const WIDS = Object.keys(WDEF);
 const PDEF = {
   coffee:  { name: 'Hot Coffee',        desc: '+20 max HP and heals you. Lukewarm, but it works.', stats: l => `+${l*20} max HP total` },
   dmg:     { name: 'Mechanical Keyboard', desc: '+12% damage per level. Loud, cathartic.', stats: l => `+${l*12}% dmg` },
-  atk:     { name: 'Overclock',          desc: '+12% attack speed per level.', stats: l => `+${l*12}% atk spd` },
+  atk:     { name: 'Overclock',          desc: '+12% attack speed per level — faster shots, faster aura ticks, faster badges.', stats: l => `+${l*12}% atk spd` },
   boots:   { name: 'Cat6 Boots',         desc: '+8% move speed per level.', stats: l => `+${l*8}% speed` },
-  area:    { name: 'Zoom Lens',          desc: '+12% area per level — bigger weapons, bigger aura.', stats: l => `+${l*12}% area` },
-  xpup:    { name: 'RAID Learning',      desc: '+15% XP gain per level.', stats: l => `+${l*15}% XP` },
+  area:    { name: 'Zoom Lens',          desc: '+12% area per level — bigger aura, whip, badges, ping splash, projectiles; longer toner range.', stats: l => `+${l*12}% area` },
+  xpup:    { name: 'RAID Learning',      desc: '+15% XP from every printer you destroy, per level.', stats: l => `+${l*15}% XP` },
   magnet:  { name: 'Badge Reel',         desc: '+40% pickup radius per level.', stats: l => `+${l*40}% pickup` },
   crit:    { name: 'Critical Thinking',  desc: '+8% crit chance per level (crits hit ×2).', stats: l => `${5+l*8}% crit` },
   glasses: { name: 'Safety Glasses',     desc: '−8% damage taken per level. Blue-light approved.', stats: l => `−${l*8}% dmg taken` },
@@ -629,6 +655,8 @@ function addProj(p, x, y, ang, spd, dmg, life, kind, r, pierce, home){
 }
 function wDmg(p, base){ return base * p.chDmg * (1 + .12 * (p.pass.dmg || 0)); }
 function areaMul(p){ return p.chArea * (1 + .12 * (p.pass.area || 0)); }
+function badgeGeom(p){ const a = areaMul(p); return { R: 78, hr: 12 * a, sz: a }; }   // Zoom Lens grows the badges, not the orbit (close printers stay covered)
+function atkMul(p){ return 1 + .12 * (p.pass.atk || 0); }
 function popText(x, y, s, c, big){ texts.push({ x: x + rnd(-6,6), y: y - 14, s, life: .7, c, big }); }
 function hitEvent(x, y, dmg, crit){
   popText(x, y, dmg, crit ? '#ffc857' : '#cfd8e8', crit);
@@ -657,7 +685,8 @@ function killEnemy(e, srcP){
   sndDie();
   inkBurst(e.x, e.y, e.type === 'golem' ? '#111' : '#33a4a', e.boss ? 60 : e.type === 'golem' ? 30 : 9);
   const mult = 1 + .15 * (((killer || {}).pass || {}).xpup || 0);
-  dropXp(e.x, e.y, Math.max(1, Math.round(e.xp * mult)));
+  const xv = e.xp * mult, xi = Math.floor(xv);
+  dropXp(e.x, e.y, Math.max(1, xi + (Math.random() < xv - xi ? 1 : 0)));
   if (e.type === 'golem'){
     for (let i = 0; i < 5; i++){ spawnEnemy('blob', false, e.x + rnd(-30,30), e.y + rnd(-30,30)); }
     pickups.push({ x: e.x + rnd(-14,14), y: e.y, kind: 'coffee', life: 999, bob: rnd(0,7) });
@@ -801,6 +830,7 @@ function applySnap(S){
       players.push(p);
     }
     p.name = a[15] || p.name; p.rv = rv;
+    p.ch = CHARS[clamp(cid, 0, 2)]; p.chArea = p.ch.areaMul || 1; p.chDmg = p.ch.dmgMul || 1;   // needed to draw aura/badges on clients
     // own player: light prediction, nudge toward authority
     if (id === myId){ me = p; if (Math.hypot(x - p.x, y - p.y) > 250){ p.x = x; p.y = y; } else { p.x += (x - p.x) * .25; p.y += (y - p.y) * .25; } }
     else { p.tx = x; p.ty = y; }
@@ -1039,6 +1069,90 @@ function showRank(res){
   if (location.protocol.startsWith('http')) loadScores();
 })();
 
+/* ---------- field manual (legend) ---------- */
+const MAN_E = {   // behaviour notes; numbers come from EDEF
+  usb:    { tags: ['SWARM'], when: 'from 0:00, stops spawning at 3:20', desc: 'Fast and wobbly. Harmless alone, nasty in packs that surround you.' },
+  inkjet: { tags: [], when: 'from 0:00', desc: 'The classic. Slow and steady, shows up in every wave.' },
+  router: { tags: ['DASH'], when: 'from 0:30', desc: 'Lunges forward at 2.4× speed for a moment every 1.4–2.6 s. Keep your distance.' },
+  fax:    { tags: ['RANGED'], when: 'from 1:00', desc: 'Stays dangerous at range: fires a spread of 3 papers every 2–3 s once you are within 480 px.' },
+  laser:  { tags: ['TANK'], when: 'from 1:30', desc: 'Slow, heavily armoured, hits hard. Don\'t let several of them pin you down.' },
+  golem:  { tags: ['ELITE'], when: 'every 45 s from 1:35', desc: 'Shrugs off knockback. When destroyed it bursts into 5 Ink Blobs and always drops a Hot Coffee.' },
+  blob:   { tags: ['SPAWN'], when: 'when a Toner Golem dies', desc: 'Quick, wobbly ink leftovers. Mop them up before they flank you.' },
+  boss:   { tags: ['BOSS'], when: 'at 2:30', desc: 'Fires an 8-way ring of paper every 2.8 s and summons 3 Inkjets every 7 s. Drops 12 big RAM sticks and a coffee. On the night shift a new one, 60 % tougher, arrives 2 min after each kill.' },
+};
+const MAN_BOOST = { mouse: 'Keyboard · Overclock · Critical Thinking (Zoom Lens: bigger cursor only)', toner: 'Keyboard · Overclock · Zoom Lens (range, pellet size) · Critical Thinking',
+  shout: 'Keyboard · Overclock (faster ticks) · Zoom Lens (radius) · Critical Thinking', badge: 'Keyboard · Overclock (faster spin) · Zoom Lens (badge size) · Critical Thinking',
+  ping: 'Keyboard · Overclock · Zoom Lens (splash radius) · Critical Thinking', keyboard: 'Keyboard · Overclock · Zoom Lens (size) · Critical Thinking',
+  whip: 'Keyboard · Overclock · Zoom Lens (reach) · Critical Thinking' };
+const MAN_P = { coffee: '☕', dmg: '⌨️', atk: '⚡', boots: '👟', area: '🔍', xpup: '📚', magnet: '🧲', crit: '🎯', glasses: '🥽' };
+const MAN_PICK = [
+  { kind: 'xp', name: 'RAM Stick', tags: ['XP'], desc: 'Dropped by every printer. Walk close and it flies to you (80 px pickup radius, more with Badge Reel). Fill the blue bar to level up.' },
+  { kind: 'coffee', name: 'Hot Coffee', tags: ['+30 HP'], desc: 'Heals 30 HP. 1.2 % drop chance per printer, guaranteed from Toner Golems and the Main Printer.' },
+  { kind: 'magnet', name: 'Surge Protector', tags: ['MAGNET'], desc: 'Pulls every RAM stick on the whole floor to you at once. 1.5 % drop chance per printer.' },
+];
+let manTab = 'printers';
+const tg = (txt, cls) => `<span class="b ${cls || ''}">${txt}</span>`;
+function iconCanvas(draw){
+  const cv = document.createElement('canvas'), k = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = 64 * k; cv.height = 64 * k;
+  const c = cv.getContext('2d'); c.setTransform(k, 0, 0, k, 0, 0); draw(c); return cv;
+}
+function renderManual(){
+  for (const b of document.querySelectorAll('#manTabs .tab')) b.classList.toggle('on', b.dataset.m === manTab);
+  const box = document.getElementById('manCards'), note = document.getElementById('manNote');
+  box.innerHTML = ''; note.textContent = '';
+  const card = (icon, html) => { const d = document.createElement('div'); d.className = 'mcard'; if (typeof icon === 'string'){ d.innerHTML = `<div class="emo">${icon}</div>`; } else d.appendChild(icon);
+    const tx = document.createElement('div'); tx.innerHTML = html; d.appendChild(tx); box.appendChild(d); };
+  if (manTab === 'printers'){
+    for (const id of EIDS){
+      const d = EDEF[id], m = MAN_E[id] || { tags: [], desc: '', when: '' };
+      const icon = iconCanvas(c => { const k = Math.min(1, 21 / d.r); c.translate(32, 36); c.scale(k, k); drawPrinter(0, 0, { type: id, r: d.r, flash: 0, bob: 0, boss: !!d.boss }, c); });
+      card(icon, `<h3>${d.name}</h3><div class="mtags">${m.tags.map(x => tg(x, x === 'BOSS' || x === 'ELITE' ? 'critical' : x === 'RANGED' || x === 'DASH' ? 'high' : '')).join('')}</div>
+        <p>${m.desc}</p><div class="mst"><b>HP</b> ${d.hp} · <b>DMG</b> ${d.dmg} · <b>SPEED</b> ${d.spd} · <b>XP</b> ${d.xp}<br><b>appears</b> ${m.when}</div>`);
+    }
+    note.textContent = 'Printers get tougher the longer the shift runs: +100 % HP every 75 s and +100 % contact damage every 4 minutes. Values above are the starting values. Speed for comparison: admins walk at 96–172.';
+  } else if (manTab === 'weapons'){
+    for (const id of WIDS){
+      const w = WDEF[id], starters = CHARS.filter(ch => ch.weapon === id).map(ch => ch.name);
+      const icon = iconCanvas(c => { c.translate(32, 32); c.scale(3, 3); drawWeaponGlyph(0, 0, id, c); });
+      const cd = id === 'shout' ? 'pulses every 0.5 s' : id === 'badge' ? 'always orbiting' : `fires every ${w.cd} s`;
+      card(icon, `<h3>${w.name}</h3><div class="mtags">${starters.length ? tg('START: ' + starters.join(', ').toUpperCase(), 'feature') : tg('LEVEL-UP CARD')}${tg(cd.toUpperCase())}</div>
+        <p>${w.desc}</p><div class="mst"><b>Lvl 1</b> ${w.stats(1)}<br><b>Lvl 5</b> ${w.stats(5)}<br><b>boosted by</b> ${MAN_BOOST[id] || ''}</div>`);
+    }
+    note.textContent = 'Every level-up offers 3 cards: a new weapon, a weapon upgrade or a patch. You can carry up to 6 weapons, each up to level 5. Weapons aim and fire on their own.';
+  } else if (manTab === 'patches'){
+    for (const id of PIDS){
+      const pd = PDEF[id];
+      card(MAN_P[id] || '⬆', `<h3>${pd.name}</h3><div class="mtags">${tg('PASSIVE')}${tg('MAX LVL 5')}</div><p>${pd.desc}</p>
+        <div class="mst"><b>Lvl 1</b> ${pd.stats(1)} · <b>Lvl 5</b> ${pd.stats(5)}</div>`);
+    }
+    note.textContent = 'Patches are passive upgrades from level-up cards and stack up to level 5. Base crit chance is 5 %; crits deal double damage.';
+  } else if (manTab === 'pickups'){
+    for (const u of MAN_PICK){
+      const icon = iconCanvas(c => { c.translate(32, 32); c.scale(3, 3); drawPickup({ kind: u.kind, x: 0, y: 0 }, 0, c); });
+      card(icon, `<h3>${u.name}</h3><div class="mtags">${u.tags.map(x => tg(x, 'feature')).join('')}</div><p>${u.desc}</p>`);
+    }
+    note.textContent = 'Pickups stay on the floor until somebody grabs them. In co-op, whoever touches a pickup first gets it.';
+  } else {
+    for (const ch of CHARS){
+      const icon = iconCanvas(c => { c.translate(32, 36); c.scale(2.2, 2.2);
+        c.fillStyle = HOOD[ch.id]; c.beginPath(); c.roundRect(-11, -6, 22, 20, 6); c.fill(); c.beginPath(); c.arc(0, -8, 9, 0, 7); c.fill();
+        c.fillStyle = '#d9b38c'; c.beginPath(); c.arc(0, -7, 6, 0, 7); c.fill(); c.fillStyle = '#222'; c.fillRect(-2.6, -8, 2, 2); c.fillRect(1, -8, 2, 2);
+        c.fillStyle = '#e8ecf5'; c.fillRect(-2.5, 4, 5, 7); });
+      card(icon, `<h3>${ch.name}</h3><div class="mtags">${tg(ch.hp + ' HP')}${tg('SPEED ' + Math.round(ch.spd * (ch.spdMul || 1)))}${tg('START: ' + WDEF[ch.weapon].name.toUpperCase(), 'feature')}</div>
+        <p>${ch.perk}</p>`);
+    }
+    note.textContent = 'Downed admins can be rebooted: stand next to them for 3 s within 15 s. After that they are OUT for the rest of the shift.';
+  }
+}
+function openManual(tab){ if (tab) manTab = tab; document.getElementById('manual').classList.remove('hidden'); renderManual(); }
+window.openManual = openManual;
+(function initManual(){
+  document.getElementById('btnManual').onclick = () => openManual();
+  document.getElementById('btnManualClose').onclick = () => document.getElementById('manual').classList.add('hidden');
+  for (const b of document.querySelectorAll('#manTabs .tab')) b.onclick = () => { manTab = b.dataset.m; renderManual(); };
+})();
+
 /* ---------- admin + helpdesk tickets ---------- */
 let adminKey = '';
 try { adminKey = sessionStorage.getItem('cad-admin') || ''; } catch(e){}
@@ -1187,7 +1301,7 @@ async function openDesk(){
 }
 window.openDesk = openDesk;
 function closeTopOverlay(){
-  for (const id of ['adminbox', 'desk', 'scores']){
+  for (const id of ['adminbox', 'manual', 'desk', 'scores']){
     const el = document.getElementById(id);
     if (!el.classList.contains('hidden')){ el.classList.add('hidden'); return; }
   }
@@ -1311,7 +1425,7 @@ function updateWeapons(p, dt){
     if (w.id === 'shout'){
       w.t -= dt;
       if (w.t <= 0){
-        w.t = .5;
+        w.t = .5 / as;                                   // Overclock: faster aura ticks
         const R = (90 + (w.lvl-1)*20) * areaMul(p), dmg = wDmg(p, 4 + (w.lvl-1)*2);
         let hitAny = false;
         for (const e of enemies) if (e.hp > 0 && dist(p.x, p.y, e.x, e.y) < R + e.r){ hurtEnemy(e, dmg, false, p); hitAny = true; }
@@ -1319,7 +1433,7 @@ function updateWeapons(p, dt){
       }
       continue;
     }
-    if (w.id === 'badge'){ w.ang += dt * 3.2; continue; }
+    if (w.id === 'badge'){ w.ang += dt * 3.2 * as; continue; }   // Overclock: faster orbit
     w.t -= dt;
     if (w.t <= 0){ fireWeapon(p, w); w.t = WDEF[w.id].cd / as; }
   }
@@ -1328,19 +1442,21 @@ function fireWeapon(p, w){
   const l = w.lvl, aim = nearestEnemy(p.x, p.y, 650);
   const ang = aim ? Math.atan2(aim.y - p.y, aim.x - p.x) : p.face;
   switch (w.id){
-    case 'mouse': addProj(p, p.x, p.y, ang, 430, wDmg(p, 12 + (l-1)*5), 1.4, 'cursor', 6, l >= 3 ? 1 : 0, 3); if (p === me) sndShot(); break;
+    case 'mouse': addProj(p, p.x, p.y, ang, 430, wDmg(p, 12 + (l-1)*5), 1.4, 'cursor', 6 * areaMul(p), l >= 3 ? 1 : 0, 3); if (p === me) sndShot(); break;
     case 'toner': { const n = 3 + (l >= 3 ? 1 : 0) + (l >= 5 ? 1 : 0);
-      for (let i = 0; i < n; i++) addProj(p, p.x, p.y, ang + rnd(-.32, .32), rnd(260, 340), wDmg(p, 7 + (l-1)*2), .38, 'toner', 5, 0, 0);
+      for (let i = 0; i < n; i++) addProj(p, p.x, p.y, ang + rnd(-.32, .32), rnd(260, 340), wDmg(p, 7 + (l-1)*2), .38 * areaMul(p), 'toner', 5 * areaMul(p), 0, 0);
       if (p === me) sndShot(); break; }
-    case 'keyboard': { const a2 = ang; projs.push({ x: p.x, y: p.y, vx: Math.cos(a2)*380, vy: Math.sin(a2)*380, dmg: wDmg(p, 20 + (l-1)*7), life: 1.5, kind: 'key', r: 11, pierce: 99, hit: [], home: 0, boomer: true, phase: 0, ang: a2, own: p });
+    case 'keyboard': { const a2 = ang; projs.push({ x: p.x, y: p.y, vx: Math.cos(a2)*380, vy: Math.sin(a2)*380, dmg: wDmg(p, 20 + (l-1)*7), life: 1.5, kind: 'key', r: 11 * areaMul(p), pierce: 99, hit: [], home: 0, boomer: true, phase: 0, ang: a2, own: p });
       if (p === me) sndShot(); break; }
     case 'ping': {
       const cands = enemies.filter(e => e.hp > 0 && dist(p.x, p.y, e.x, e.y) < 520).sort((a,b) => dist(p.x,p.y,a.x,a.y) - dist(p.x,p.y,b.x,b.y)).slice(0, 1 + l);
       for (const e of cands){
         zaps.push({ x: e.x, y: e.y, life: .18 }); netEvents.f.push([Math.round(e.x), Math.round(e.y), 0, 1]);
-        hurtEnemy(e, wDmg(p, 22 + (l-1)*6), false, p);
-        fx.push({ kind: 'zapring', x: e.x, y: e.y, life: .25, r: 40 * areaMul(p) });
-        netEvents.f.push([Math.round(e.x), Math.round(e.y), 0, 2]);
+        const pd = wDmg(p, 22 + (l-1)*6), SR = 36 * areaMul(p);
+        hurtEnemy(e, pd, false, p);
+        for (const o of enemies) if (o !== e && o.hp > 0 && dist(e.x, e.y, o.x, o.y) < SR + o.r) hurtEnemy(o, pd * .4, false, p);   // splash
+        fx.push({ kind: 'zapring', x: e.x, y: e.y, life: .25, r: SR });
+        netEvents.f.push([Math.round(e.x), Math.round(e.y), Math.round(SR), 2]);
       }
       if (cands.length && p === me) blip(1400, .09, 'square', .03, -500);
       break; }
@@ -1496,7 +1612,7 @@ function updateProjectiles(dt){
     if (p.out) continue;
     for (const w of p.weapons){
       if (w.id !== 'badge') continue;
-      const n = 1 + w.lvl, R = 78 * areaMul(p);
+      const n = 1 + w.lvl, { R, hr } = badgeGeom(p), cd = .5 / atkMul(p);
       for (let i = 0; i < n; i++){
         const ba = w.ang + (i / n) * Math.PI * 2;
         const bx = p.x + Math.cos(ba) * R, by = p.y + Math.sin(ba) * R;
@@ -1504,7 +1620,7 @@ function updateProjectiles(dt){
           if (e.hp <= 0) continue;
           const key = 'b' + i;
           if ((e.hitCd[key] || 0) > t) continue;
-          if (dist(bx, by, e.x, e.y) < 12 + e.r){ hurtEnemy(e, wDmg(p, 10 + (w.lvl-1)*3), false, p); e.hitCd[key] = t + .5; }
+          if (dist(bx, by, e.x, e.y) < hr + e.r){ hurtEnemy(e, wDmg(p, 10 + (w.lvl-1)*3), false, p); e.hitCd[key] = t + cd; }
         }
       }
     }
@@ -1540,45 +1656,45 @@ function clientTick(dt){
 }
 
 /* ---------- rendering (shared) ---------- */
-function drawPrinter(x, y, e){
+function drawPrinter(x, y, e, c = ctx){
   const b = Math.sin((t + e.bob) * 5) * 2;
-  ctx.save(); ctx.translate(x, y + b);
+  c.save(); c.translate(x, y + b);
   const flash = e.flash > 0;
   const body = flash ? '#fff' : ({ inkjet: '#4a5568', laser: '#5a4a5f', router: '#3b4a63', fax: '#565f74',
     usb: '#2f6e4f', golem: '#14161a', blob: '#0c0d10', boss: '#38404f' })[e.type];
   const eye = e.type === 'golem' ? '#ff4040' : (Math.floor(t * 4 + e.bob) % 2 ? '#ff3030' : '#ff7040');
   const r = e.r;
   if (e.type === 'usb'){
-    ctx.fillStyle = body; ctx.fillRect(-r, -6, r * 2, 12);
-    ctx.fillStyle = '#cfd8e8'; ctx.fillRect(r - 4, -3, 6, 6);
-    ctx.fillStyle = eye; ctx.fillRect(-5, -2, 3, 3); ctx.fillRect(2, -2, 3, 3);
+    c.fillStyle = body; c.fillRect(-r, -6, r * 2, 12);
+    c.fillStyle = '#cfd8e8'; c.fillRect(r - 4, -3, 6, 6);
+    c.fillStyle = eye; c.fillRect(-5, -2, 3, 3); c.fillRect(2, -2, 3, 3);
   } else if (e.type === 'router'){
-    ctx.fillStyle = body; ctx.fillRect(-r, -r * .7, r * 2, r * 1.4);
-    ctx.strokeStyle = body; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(-r + 3, -r * .7); ctx.lineTo(-r - 2, -r * 1.5); ctx.moveTo(r - 3, -r * .7); ctx.lineTo(r + 2, -r * 1.5); ctx.stroke();
-    ctx.fillStyle = eye; ctx.fillRect(-6, -3, 4, 4); ctx.fillRect(2, -3, 4, 4);
-    ctx.fillStyle = '#5fd07a'; ctx.fillRect(0, 4, 3, 3);
+    c.fillStyle = body; c.fillRect(-r, -r * .7, r * 2, r * 1.4);
+    c.strokeStyle = body; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-r + 3, -r * .7); c.lineTo(-r - 2, -r * 1.5); c.moveTo(r - 3, -r * .7); c.lineTo(r + 2, -r * 1.5); c.stroke();
+    c.fillStyle = eye; c.fillRect(-6, -3, 4, 4); c.fillRect(2, -3, 4, 4);
+    c.fillStyle = '#5fd07a'; c.fillRect(0, 4, 3, 3);
   } else {
     const bw = r * 1.9, bh = r * 1.4;
-    ctx.fillStyle = flash ? '#fff' : '#e8ecf5';
-    ctx.save(); ctx.rotate(Math.sin(t * 3 + e.bob) * .12); ctx.fillRect(-bw * .22, -bh - 12, bw * .45, 16); ctx.restore();
-    ctx.fillStyle = body; ctx.beginPath(); ctx.roundRect(-bw/2, -bh/2, bw, bh, 4); ctx.fill();
-    ctx.fillStyle = flash ? '#fff' : '#232936'; ctx.fillRect(-bw/2 + 4, bh/2 - 6, bw - 8, 5);
-    ctx.fillStyle = eye; ctx.fillRect(-bw * .28, -bh * .22, bw * .16, bh * .18); ctx.fillRect(bw * .12, -bh * .22, bw * .16, bh * .18);
-    ctx.strokeStyle = flash ? '#fff' : '#101319'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(-bw * .3, -bh * .34); ctx.lineTo(-bw * .08, -bh * .18);
-    ctx.moveTo(bw * .3, -bh * .34); ctx.lineTo(bw * .08, -bh * .18); ctx.stroke();
-    if (e.type === 'golem'){ ctx.fillStyle = '#000';
-      for (let i = 0; i < 4; i++){ const dx = -bw/2 + (i+.5) * (bw/4); ctx.beginPath(); ctx.arc(dx, bh/2 + Math.sin(t*4+i)*3, 4, 0, 7); ctx.fill(); } }
+    c.fillStyle = flash ? '#fff' : '#e8ecf5';
+    c.save(); c.rotate(Math.sin(t * 3 + e.bob) * .12); c.fillRect(-bw * .22, -bh - 12, bw * .45, 16); c.restore();
+    c.fillStyle = body; c.beginPath(); c.roundRect(-bw/2, -bh/2, bw, bh, 4); c.fill();
+    c.fillStyle = flash ? '#fff' : '#232936'; c.fillRect(-bw/2 + 4, bh/2 - 6, bw - 8, 5);
+    c.fillStyle = eye; c.fillRect(-bw * .28, -bh * .22, bw * .16, bh * .18); c.fillRect(bw * .12, -bh * .22, bw * .16, bh * .18);
+    c.strokeStyle = flash ? '#fff' : '#101319'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-bw * .3, -bh * .34); c.lineTo(-bw * .08, -bh * .18);
+    c.moveTo(bw * .3, -bh * .34); c.lineTo(bw * .08, -bh * .18); c.stroke();
+    if (e.type === 'golem'){ c.fillStyle = '#000';
+      for (let i = 0; i < 4; i++){ const dx = -bw/2 + (i+.5) * (bw/4); c.beginPath(); c.arc(dx, bh/2 + Math.sin(t*4+i)*3, 4, 0, 7); c.fill(); } }
     if (e.boss){
-      ctx.fillStyle = flash ? '#fff' : '#2b3242'; ctx.fillRect(-bw/2, -bh/2 - 8, bw, 8);
-      ctx.fillStyle = '#101319'; ctx.fillRect(-bw/2 + 6, bh/2, 10, 14); ctx.fillRect(bw/2 - 16, bh/2, 10, 14);
-      ctx.fillStyle = eye; ctx.fillRect(-bw * .1, bh * .12, bw * .2, 5);
-      ctx.strokeStyle = `rgba(255,60,60,${.25 + .15 * Math.sin(t*6)})`; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.arc(0, 0, r + 16, 0, 7); ctx.stroke();
+      c.fillStyle = flash ? '#fff' : '#2b3242'; c.fillRect(-bw/2, -bh/2 - 8, bw, 8);
+      c.fillStyle = '#101319'; c.fillRect(-bw/2 + 6, bh/2, 10, 14); c.fillRect(bw/2 - 16, bh/2, 10, 14);
+      c.fillStyle = eye; c.fillRect(-bw * .1, bh * .12, bw * .2, 5);
+      c.strokeStyle = `rgba(255,60,60,${.25 + .15 * Math.sin(t*6)})`; c.lineWidth = 3;
+      c.beginPath(); c.arc(0, 0, r + 16, 0, 7); c.stroke();
     }
   }
-  ctx.restore();
+  c.restore();
 }
 function drawAdmin(x, y, p, isMe){
   const hood = HOOD[p.ch.id] || '#3a6ea5';
@@ -1607,10 +1723,10 @@ function drawAdmin(x, y, p, isMe){
       ctx.fillStyle = 'rgba(255,200,87,.05)'; ctx.beginPath(); ctx.arc(x, y, R, 0, 7); ctx.fill();
     }
     if (w.id === 'badge'){
-      const n = 1 + w.lvl, R = 78 * areaMul(p);
+      const n = 1 + w.lvl, { R, sz } = badgeGeom(p);
       for (let i = 0; i < n; i++){
         const a = w.ang + (i / n) * Math.PI * 2;
-        ctx.save(); ctx.translate(x + Math.cos(a) * R, y + Math.sin(a) * R); ctx.rotate(a + Math.PI/2);
+        ctx.save(); ctx.translate(x + Math.cos(a) * R, y + Math.sin(a) * R); ctx.rotate(a + Math.PI/2); ctx.scale(sz, sz);
         ctx.fillStyle = '#e8ecf5'; ctx.fillRect(-5, -7, 10, 14);
         ctx.fillStyle = '#3a6ea5'; ctx.fillRect(-2.4, -4, 4.8, 5);
         ctx.restore();
@@ -1631,19 +1747,33 @@ function drawAdmin(x, y, p, isMe){
   }
 }
 function fmtTime(){ const m = Math.floor(t/60), s = Math.floor(t%60); return m + ':' + String(s).padStart(2,'0'); }
-function drawWeaponGlyph(x, y, id){
-  ctx.save(); ctx.translate(x, y);
-  ctx.fillStyle = '#e8ecf5'; ctx.strokeStyle = '#e8ecf5'; ctx.lineWidth = 1.4;
-  switch (id){
-    case 'mouse': ctx.beginPath(); ctx.moveTo(-4,-6); ctx.lineTo(5,4); ctx.lineTo(0,3); ctx.lineTo(-3,7); ctx.closePath(); ctx.fill(); break;
-    case 'toner': for (const [dx,dy] of [[-5,-3],[5,-3],[0,4],[3,0]]) { ctx.beginPath(); ctx.arc(dx,dy,1.7,0,7); ctx.fill(); } break;
-    case 'shout': ctx.beginPath(); ctx.arc(0,1,3,0,7); ctx.fill(); ctx.beginPath(); ctx.arc(0,1,6.5,-1,1); ctx.stroke(); break;
-    case 'badge': ctx.fillRect(-4,-5,8,11); ctx.fillStyle='#54c8ff'; ctx.fillRect(-2.4,-3,4.8,3.6); break;
-    case 'ping': ctx.beginPath(); ctx.moveTo(1,-7); ctx.lineTo(-3,0); ctx.lineTo(0,0); ctx.lineTo(-1,7); ctx.lineTo(3,0); ctx.lineTo(0,0); ctx.closePath(); ctx.fill(); break;
-    case 'keyboard': ctx.fillRect(-7,-4,14,8); ctx.fillStyle='#232936'; for(let cx=-5;cx<=5;cx+=4)for(let cy=-2;cy<=2;cy+=3)ctx.fillRect(cx-1,cy-.8,2,1.6); break;
-    case 'whip': ctx.beginPath(); ctx.moveTo(-6,5); ctx.quadraticCurveTo(0,0,6,-6); ctx.stroke(); break;
+function drawPickup(u, b, c = ctx){
+  if (u.kind === 'xp'){
+    c.fillStyle = '#2e7d4f'; c.fillRect(u.x - 5, u.y - 3 + b, 10, 7);
+    c.fillStyle = '#7CFC9B'; c.fillRect(u.x - 3.5, u.y - 1 + b, 2, 2); c.fillRect(u.x + 1, u.y - 1 + b, 2, 2);
+    c.fillStyle = '#c9a227'; c.fillRect(u.x - 4, u.y + 3 + b, 8, 2);
+  } else if (u.kind === 'coffee'){
+    c.fillStyle = '#e8ecf5'; c.fillRect(u.x - 5, u.y - 5 + b, 10, 10);
+    c.fillStyle = '#6b4a2f'; c.fillRect(u.x - 3.5, u.y - 3.5 + b, 7, 3);
+    c.strokeStyle = '#e8ecf5'; c.beginPath(); c.arc(u.x + 7, u.y + b, 3, -1.2, 1.4); c.stroke();
+  } else {
+    c.fillStyle = '#54c8ff'; c.fillRect(u.x - 6, u.y - 4 + b, 12, 8);
+    c.fillStyle = '#101319'; c.fillRect(u.x - 4, u.y - 2 + b, 2, 4); c.fillRect(u.x - 1, u.y - 2 + b, 2, 4); c.fillRect(u.x + 2, u.y - 2 + b, 2, 4);
   }
-  ctx.restore();
+}
+function drawWeaponGlyph(x, y, id, c = ctx){
+  c.save(); c.translate(x, y);
+  c.fillStyle = '#e8ecf5'; c.strokeStyle = '#e8ecf5'; c.lineWidth = 1.4;
+  switch (id){
+    case 'mouse': c.beginPath(); c.moveTo(-4,-6); c.lineTo(5,4); c.lineTo(0,3); c.lineTo(-3,7); c.closePath(); c.fill(); break;
+    case 'toner': for (const [dx,dy] of [[-5,-3],[5,-3],[0,4],[3,0]]) { c.beginPath(); c.arc(dx,dy,1.7,0,7); c.fill(); } break;
+    case 'shout': c.beginPath(); c.arc(0,1,3,0,7); c.fill(); c.beginPath(); c.arc(0,1,6.5,-1,1); c.stroke(); break;
+    case 'badge': c.fillRect(-4,-5,8,11); c.fillStyle='#54c8ff'; c.fillRect(-2.4,-3,4.8,3.6); break;
+    case 'ping': c.beginPath(); c.moveTo(1,-7); c.lineTo(-3,0); c.lineTo(0,0); c.lineTo(-1,7); c.lineTo(3,0); c.lineTo(0,0); c.closePath(); c.fill(); break;
+    case 'keyboard': c.fillRect(-7,-4,14,8); c.fillStyle='#232936'; for(let cx=-5;cx<=5;cx+=4)for(let cy=-2;cy<=2;cy+=3)c.fillRect(cx-1,cy-.8,2,1.6); break;
+    case 'whip': c.beginPath(); c.moveTo(-6,5); c.quadraticCurveTo(0,0,6,-6); c.stroke(); break;
+  }
+  c.restore();
 }
 function render(){
   if (!me && mode !== 'client') return;
@@ -1658,21 +1788,7 @@ function render(){
   const vx0 = cam.x, vy0 = cam.y;
   ctx.drawImage(BG, 0, 0);
   ctx.strokeStyle = '#39415a'; ctx.lineWidth = 6; ctx.strokeRect(0, 0, ARENA_W, ARENA_H);
-  for (const u of pickups){
-    const b = Math.sin(u.bob) * 3;
-    if (u.kind === 'xp'){
-      ctx.fillStyle = '#2e7d4f'; ctx.fillRect(u.x - 5, u.y - 3 + b, 10, 7);
-      ctx.fillStyle = '#7CFC9B'; ctx.fillRect(u.x - 3.5, u.y - 1 + b, 2, 2); ctx.fillRect(u.x + 1, u.y - 1 + b, 2, 2);
-      ctx.fillStyle = '#c9a227'; ctx.fillRect(u.x - 4, u.y + 3 + b, 8, 2);
-    } else if (u.kind === 'coffee'){
-      ctx.fillStyle = '#e8ecf5'; ctx.fillRect(u.x - 5, u.y - 5 + b, 10, 10);
-      ctx.fillStyle = '#6b4a2f'; ctx.fillRect(u.x - 3.5, u.y - 3.5 + b, 7, 3);
-      ctx.strokeStyle = '#e8ecf5'; ctx.beginPath(); ctx.arc(u.x + 7, u.y + b, 3, -1.2, 1.4); ctx.stroke();
-    } else {
-      ctx.fillStyle = '#54c8ff'; ctx.fillRect(u.x - 6, u.y - 4 + b, 12, 8);
-      ctx.fillStyle = '#101319'; ctx.fillRect(u.x - 4, u.y - 2 + b, 2, 4); ctx.fillRect(u.x - 1, u.y - 2 + b, 2, 4); ctx.fillRect(u.x + 2, u.y - 2 + b, 2, 4);
-    }
-  }
+  for (const u of pickups) drawPickup(u, Math.sin(u.bob) * 3);
   for (const x of fx){
     if (x.kind === 'cone'){
       ctx.fillStyle = `rgba(124,252,155,${clamp(x.life * 1.4, 0, 1)})`;
