@@ -1,0 +1,9 @@
+# runtime data written by the server (real highscores / tickets) - never commit
+data/
+# admin password file
+secrets/
+*.tmp
+node_modules/
+.DS_Store
+backup*/
+tests/screenshots/

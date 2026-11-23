@@ -2,7 +2,7 @@ name: ctrl-alt-defeat
 services:
   game:
     build: .
-    image: ctrl-alt-defeat:1.0
+    image: ctrl-alt-defeat:1.1
     restart: unless-stopped
     init: true
     read_only: true
@@ -14,8 +14,11 @@ services:
     pids_limit: 128
     ports:
       - "192.168.1.10:8091:8091"   # LAN interface only - do not forward to the internet
+    environment:
+      ADMIN_PASSWORD_FILE: /run/secrets/admin_password
     volumes:
-      - ./data:/app/data       # highscores.json (uid 1000 = node in the container)
+      - ./data:/app/data       # highscores.json + tickets.json (uid 1000 = node in the container)
+      - ./secrets/admin_password:/run/secrets/admin_password:ro
     logging:
       driver: json-file
       options:

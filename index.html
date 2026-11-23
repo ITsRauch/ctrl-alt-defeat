@@ -128,7 +128,47 @@
   .bigbtn.notall{background:transparent;color:var(--amber);border:2px solid var(--amber)}
   .lobbyactions{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:16px}
   /* --- highscores --- */
-  #scores{z-index:7;background:rgba(12,14,20,.97)}
+  .rankline.bad{color:var(--red);font-size:13px;max-width:680px;line-height:1.5}
+  .deskbtn{border-color:var(--cyan)!important;color:var(--cyan)!important;font-weight:700}
+  .linkbtn{background:none;border:none;color:var(--dim);font-family:inherit;font-size:12px;cursor:pointer;margin-top:8px;text-decoration:underline}
+  .linkbtn:hover{color:var(--ink)}
+  #desk,#scores{z-index:7;background:rgba(12,14,20,.97)} #adminbox{z-index:8;background:rgba(12,14,20,.96)}
+  .desksub{color:var(--dim);font-size:12px;margin:-2px 0 12px}
+  .deskbar{display:flex;gap:10px;align-items:center;justify-content:space-between;width:min(1040px,94vw);margin-bottom:10px;flex-wrap:wrap}
+  .deskbar .tabs{margin:0}
+  .deskright{display:flex;gap:10px;align-items:center}
+  .adminon{border-color:var(--amber)!important;color:var(--amber)!important}
+  .deskbody{display:flex;gap:14px;width:min(1040px,94vw);height:min(60vh,560px);text-align:left}
+  .tklist{width:38%;min-width:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px}
+  .tkpane{flex:1;overflow-y:auto;background:var(--panel);border:1px solid #2a3248;border-radius:12px;padding:16px 18px}
+  .tkrow{background:var(--panel);border:1px solid #2a3248;border-radius:10px;padding:9px 12px;text-align:left;cursor:pointer;color:var(--ink);font-family:inherit}
+  .tkrow:hover{border-color:#4a5578} .tkrow.sel{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan) inset}
+  .tkline{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:10px}
+  .tkkey{color:var(--amber);font-weight:700;letter-spacing:1px;font-size:11px}
+  .tktitle{font-size:13px;margin:4px 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tkmeta{font-size:11px;color:var(--dim)}
+  .b{font-size:9px;letter-spacing:1.5px;border-radius:5px;padding:2px 6px;border:1px solid #3a4460;color:var(--dim);white-space:nowrap}
+  .b.bug{color:var(--red);border-color:rgba(255,85,102,.5)} .b.feature{color:var(--cyan);border-color:rgba(84,200,255,.5)}
+  .b.critical{background:var(--red);color:#10151f;border-color:var(--red);font-weight:700} .b.high{color:var(--amber);border-color:rgba(255,200,87,.5)}
+  .b.st-new{color:var(--lime);border-color:rgba(124,252,155,.5)} .b.st-progress{color:#10151f;background:var(--cyan);border-color:var(--cyan)}
+  .b.st-done{color:#10151f;background:var(--lime);border-color:var(--lime)} .b.st-rejected{color:var(--red);border-color:rgba(255,85,102,.5);text-decoration:line-through}
+  .tkempty{color:var(--dim);font-size:13px;padding:24px 8px;text-align:center;line-height:1.7}
+  .tkh{margin:8px 0 4px;font-size:18px}
+  .tkdesc{white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.6;margin:12px 0;padding:10px 12px;background:rgba(0,0,0,.18);border-radius:8px}
+  .tkadmin{display:flex;gap:10px;align-items:center;margin:10px 0;padding:8px 10px;border:1px dashed rgba(255,200,87,.5);border-radius:8px;font-size:11px;color:var(--amber);letter-spacing:1px;flex-wrap:wrap}
+  .tkc{border-left:2px solid #3a4460;padding:4px 0 4px 10px;margin:10px 0}
+  .tkc.adm{border-left-color:var(--amber)}
+  .tkcm{font-size:11px;color:var(--dim)} .tkct{font-size:13px;white-space:pre-wrap;word-break:break-word;margin-top:2px;line-height:1.5}
+  .tksec{font-size:10px;letter-spacing:3px;color:var(--dim);margin:16px 0 4px}
+  .tkform{display:flex;flex-direction:column;gap:10px}
+  .tkform label{display:flex;flex-direction:column;gap:4px;font-size:10px;letter-spacing:2px;color:var(--dim)}
+  .tkform .row{display:flex;gap:10px} .tkform .row label{flex:1}
+  .fld,.tkform input,.tkform select,.tkform textarea{background:#151925;border:1px solid #3a4460;border-radius:8px;padding:9px 10px;color:var(--ink);font-family:inherit;font-size:13px;width:100%}
+  textarea.fld,.tkform textarea{resize:vertical;min-height:70px}
+  .fld:focus,.tkform input:focus,.tkform select:focus,.tkform textarea:focus{outline:none;border-color:var(--cyan)}
+  .notice{background:rgba(124,252,155,.1);border:1px solid rgba(124,252,155,.4);color:var(--lime);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:10px}
+  .danger{border-color:rgba(255,85,102,.6)!important;color:var(--red)!important}
+  .xbtn{background:none;border:1px solid rgba(255,85,102,.5);color:var(--red);border-radius:6px;cursor:pointer;font-family:inherit;padding:1px 7px}
   .hsrow{display:flex;gap:12px;justify-content:center;align-items:center;margin:16px 0 0;flex-wrap:wrap}
   .hsbtn{border-color:var(--amber)!important;color:var(--amber)!important;font-weight:700}
   .teaser{font-size:12px;color:var(--dim)} .teaser b{color:var(--amber)}
@@ -186,6 +226,7 @@
       </div>
       <div class="hsrow">
         <button class="mbtn hsbtn" id="btnScores">🏆 HIGHSCORES</button>
+        <button class="mbtn deskbtn" id="btnDesk">🎫 HELPDESK</button>
         <span class="teaser" id="hsTeaser"></span>
       </div>
       <div class="guide">
@@ -197,7 +238,8 @@
           <li><b>The host's browser runs the game</b> — host, keep that tab open, or the shift ends for everyone.</li>
         </ol>
         <div class="ctl"><span class="key">WASD</span> / <span class="key">← ↑ → ↓</span> move &nbsp;·&nbsp; weapons fire <b>automatically</b> &nbsp;·&nbsp; collect green RAM for XP &nbsp;·&nbsp;
-          stand next to a downed colleague for 3 s to revive them &nbsp;·&nbsp; <span class="key">P</span> pause (host only)</div>
+          stand next to a downed colleague for 3 s to revive them &nbsp;·&nbsp; <span class="key">P</span> pause (host only)<br>
+          Found a bug or have an idea? Open a ticket at the <b>🎫 HELPDESK</b>. Scores are verified by the server — tampering gets you disqualified.</div>
       </div>
     </div>
 
@@ -242,7 +284,35 @@
     <div class="tabs"><button class="tab" data-tab="solo">SOLO</button><button class="tab" data-tab="multi">MULTIPLAYER</button></div>
     <div class="hsnote">Top 20 · ranked by time survived, then printers destroyed · stored on the server</div>
     <div class="hswrap"><table class="hs" id="hsTable"></table></div>
-    <button class="ghostbtn" id="btnScoresClose">close</button>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:10px"><button class="ghostbtn" id="btnScoresClose" style="margin:0">close</button><button class="backbtn adminbtn">🔑 admin</button></div>
+  </div>
+
+  <div id="desk" class="overlay hidden">
+    <h1 style="font-size:28px">🎫 PRNT SERVICE DESK</h1>
+    <div class="desksub">Found a bug? Want a feature? Open a ticket. Estimated response time: 3–5 business lunch breaks.</div>
+    <div class="deskbar">
+      <div class="tabs">
+        <button class="tab" data-f="open">OPEN</button><button class="tab" data-f="closed">CLOSED</button><button class="tab" data-f="all">ALL</button>
+      </div>
+      <div class="deskright">
+        <button class="mbtn hsbtn" id="btnNewTicket">+ NEW TICKET</button>
+        <button class="backbtn adminbtn">🔑 admin</button>
+      </div>
+    </div>
+    <div class="deskbody">
+      <div class="tklist" id="tkList"></div>
+      <div class="tkpane" id="tkPane"></div>
+    </div>
+    <button class="ghostbtn" id="btnDeskClose">close</button>
+  </div>
+
+  <div id="adminbox" class="overlay hidden">
+    <h1 style="font-size:24px">🔑 ADMIN LOGIN</h1>
+    <div class="tagline">Admins can change ticket status, delete tickets and remove highscores.</div>
+    <input class="fld" type="password" id="adminPw" placeholder="admin password" autocomplete="current-password" style="width:260px">
+    <button class="bigbtn" id="btnAdminGo">LOG IN</button>
+    <div class="err" id="adminErr"></div>
+    <button class="ghostbtn" id="btnAdminCancel">cancel</button>
   </div>
 
   <div id="levelup" class="overlay hidden">
@@ -258,6 +328,7 @@
     <div class="rankline" id="deadRank"></div>
     <button class="bigbtn" onclick="toStart()">REBOOT</button>
     <button class="ghostbtn hsbtn" onclick="openScores()">🏆 HIGHSCORES</button>
+    <button class="linkbtn" onclick="openDesk()">🎫 something felt off? report a bug</button>
     <div class="small" id="deadHint">The helpdesk never rests.</div>
   </div>
 
@@ -318,10 +389,11 @@ function sndBoss(){ blip(70, .5, 'sawtooth', .09, 40); }
 
 /* ---------- input ---------- */
 const keys = new Set();
+const isField = el => !!el && ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
 addEventListener('keydown', e => {
+  if (isField(e.target)) return;                 // typing in a form: no game controls (spaces work again)
   if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
   if (['levelup','dead','win'].includes(state)) return;
-  if (e.target && e.target.tagName === 'INPUT') return;
   keys.add(e.code);
   if (e.code === 'KeyP' && isHost() && (st === 0 || st === 4)) st = st === 0 ? 4 : 0;
   audio(); sendInput(true);
@@ -441,6 +513,8 @@ function netLost(){
   showDead('CONNECTION LOST', 'The LAN cable was tripped over. The shift ended abruptly.');
 }
 function netMsg(m){
+  if (m.t === 'hs'){ lastHs = m; if (state === 'dead') showRank(m); loadScores(); return; }
+  if (m.t === 'welcome' && mode === 'solo'){ roomCode = m.code; return; }     // solo: server only watches the run
   if (m.t === 'welcome'){ myId = m.id; hostId = m.hostId; roomCode = m.code;
     if (m.role === 'client') netSend({ k: 'j', cid: CHARS.findIndex(c => c.id === pendingChar), name: pendingName }); }
   else if (m.t === 'err'){ document.getElementById('startStatus').textContent = ''; document.getElementById('startErr').textContent = '✖ ' + m.msg + ' — check the code on the host\'s screen.'; netBusy = false; showStartStep(); document.getElementById('codeIn').focus(); }
@@ -593,7 +667,7 @@ function killEnemy(e, srcP){
     pickups.push({ x: e.x, y: e.y, kind: 'coffee', life: 999, bob: 0 });
     shake = 20;
     if (!winShown){ winShown = true; st = 2; }
-    boss = null; if (endless) bossT = t + 120;
+    boss = null; bossT = t + 120;          // next boss (night shift) 2 minutes after a kill
   }
   if (!e.boss && Math.random() < .015) pickups.push({ x: e.x, y: e.y, kind: 'magnet', life: 999, bob: rnd(0,7) });
   if (!e.boss && Math.random() < .012) pickups.push({ x: e.x, y: e.y, kind: 'coffee', life: 999, bob: rnd(0,7) });
@@ -694,7 +768,7 @@ function hostNetTick(dt){
   if (snapT <= 0){
     snapT = .05;
     const S = buildSnap();
-    if (mode === 'host') netSend(S);
+    if (mode !== 'client') netSend(S);      // solo too: the server verifies every run
     netEvents.h = []; netEvents.f = []; netEvents.ev = [];
     // dispatch card offers locally + remotely; game pauses while anyone is picking
     for (const p of players){
@@ -794,7 +868,7 @@ function statBlock(){
 }
 function showDead(title, why){
   if (state === 'dead') return;
-  if (!hsSent || !isHost()) showRank(null);
+  showRank(lastHs || (title === 'SIGNAL LOST' && ws && ws.readyState === 1 ? 'pending' : null));
   document.getElementById('lobby').classList.add('hidden');
   state = 'dead';
   document.getElementById('deathTitle').textContent = title;
@@ -807,7 +881,7 @@ function toStart(){
   showStartStep();
   document.getElementById('start').classList.remove('hidden');
   state = 'start'; mode = null; players = []; me = null; clientSnap = null; netBusy = false; keys.clear();
-  myReady = false; lateJoin = false; lobbyList = [];
+  myReady = false; lateJoin = false; lobbyList = []; lastHs = null;
   if (location.protocol.startsWith('http')) loadScores();
   if (ws){ ws.onclose = ws.onerror = ws.onmessage = null; try { ws.close(); } catch(e){} ws = null; }
   document.getElementById('startErr').textContent = '';
@@ -838,7 +912,8 @@ let myReady = false, lateJoin = false, lobbyList = [];
     el.innerHTML = `<h3>${ch.name}</h3><div class="wpn">starts with: ${WDEF[ch.weapon].name}</div><p>${ch.perk}</p>`;
     el.onclick = () => {
       audio(); pendingChar = ch.id; rememberClass(); takeName();
-      $('start').classList.add('hidden'); mode = 'solo'; st = 0; myId = hostId = 0; newRun(ch); state = 'playing';
+      $('start').classList.add('hidden'); mode = 'solo'; st = 0; myId = hostId = 0; lastHs = null; newRun(ch); state = 'playing';
+      if (location.protocol.startsWith('http')) connectWS(() => { if (mode === 'solo') netSend({ t: 'hello', role: 'host', solo: 1, name: pendingName }); });
     };
     sel.appendChild(el);
   }
@@ -915,14 +990,22 @@ function renderScores(){
   const rows = hsData[hsTab] || [];
   if (!rows.length){ $('hsTable').innerHTML = `<tr><td class="hsempty">No ${hsTab === 'solo' ? 'solo' : 'multiplayer'} scores yet. Go set one!</td></tr>`; return; }
   const short = { sysadmin: 'Sysadmin', helpdesk: 'Helpdesk', devops: 'DevOps' };
-  let h = `<tr><th>#</th><th class="who">${hsTab === 'solo' ? 'ADMIN' : 'TEAM'}</th><th>TIME</th><th>KILLS</th><th>LVL</th><th>BOSS</th><th>DATE</th></tr>`;
+  let h = `<tr><th>#</th><th class="who">${hsTab === 'solo' ? 'ADMIN' : 'TEAM'}</th><th>TIME</th><th>KILLS</th><th>LVL</th><th>BOSS</th><th>DATE</th>${adminKey ? '<th></th>' : ''}</tr>`;
   rows.forEach((r, i) => {
     const who = r.players.map(p => `${escapeHtml(p.n)}<span class="cls">${short[p.c] || p.c}</span>`).join(' &nbsp;· ');
     const d = new Date(r.date);
     h += `<tr class="r${i + 1}${r.id === myHsId ? ' mine' : ''}"><td class="rk">${i + 1}</td><td class="who">${who}</td><td><b>${fmtT(r.time)}</b></td><td>${r.kills}</td><td>${r.level}</td>`
-       + `<td>${r.bosses ? '☠'.repeat(Math.min(r.bosses, 3)) + (r.bosses > 3 ? '×' + r.bosses : '') : '–'}</td><td>${d.toLocaleDateString()}</td></tr>`;
+       + `<td>${r.bosses ? '☠'.repeat(Math.min(r.bosses, 3)) + (r.bosses > 3 ? '×' + r.bosses : '') : '–'}</td><td>${d.toLocaleDateString()}</td>`
+       + (adminKey ? `<td><button class="xbtn" data-del="${r.id}" title="delete this score">✖</button></td>` : '') + `</tr>`;
   });
   $('hsTable').innerHTML = h;
+  for (const b of document.querySelectorAll('#hsTable .xbtn')) b.onclick = async () => {
+    const e = rows.find(x => x.id === b.dataset.del); if (!e) return;
+    if (!confirm(`Delete the ${fmtT(e.time)} score of ${e.players.map(p => p.n).join(', ')}?`)) return;
+    const r = await api('DELETE', '/api/highscores/' + e.id);
+    if (!r.ok){ alert('Could not delete: ' + r.error); return; }
+    hsData = { solo: r.solo, multi: r.multi }; renderScores(); renderTeaser();
+  };
 }
 async function openScores(tab){
   if (tab) hsTab = tab;
@@ -930,34 +1013,197 @@ async function openScores(tab){
   renderScores(); await loadScores(); renderScores();
 }
 window.openScores = openScores;
+let lastHs = null, rankWaitT = null;
 function showRank(res){
   const el = document.getElementById('deadRank');
+  clearTimeout(rankWaitT);
   if (!res){ el.className = 'rankline meh'; el.textContent = ''; return; }
-  myHsId = res.id || ''; if (res.list) hsTab = res.list;
+  if (res === 'pending'){
+    el.className = 'rankline meh'; el.textContent = '🔎 verifying the shift with the server…';
+    rankWaitT = setTimeout(() => { if (!lastHs) el.textContent = 'Score could not be verified (no answer from the server).'; }, 5000);
+    return;
+  }
+  if (res.list) hsTab = res.list;
+  myHsId = res.id || '';
   const label = res.list === 'multi' ? 'MULTIPLAYER' : 'SOLO';
-  if (res.rank){ el.className = 'rankline new'; el.textContent = `🏆 NEW HIGHSCORE — #${res.rank} in ${label} top 20!`; }
-  else { el.className = 'rankline meh'; el.textContent = `Not in the ${label.toLowerCase()} top 20 this time.`; }
-  if (res.solo){ hsData = { solo: res.solo, multi: res.multi }; renderTeaser(); }
-}
-async function submitScore(){
-  if (hsSent || !isHost()) return;
-  hsSent = true;
-  const el = document.getElementById('deadRank');
-  if (t < 10){ el.className = 'rankline meh'; el.textContent = 'Shifts under 10 s don\'t count for the highscores.'; return; }
-  const run = { runId, time: Math.round(t), kills: runKills, level: runMaxLvl, bosses: runBosses, players: [...runRoster.values()] };
-  el.className = 'rankline meh'; el.textContent = 'submitting score…';
-  let res = null;
-  try { const r = await fetch('/api/highscores', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(run) }); if (r.ok) res = await r.json(); } catch(e){}
-  if (!res){ el.className = 'rankline meh'; el.textContent = location.protocol.startsWith('http') ? 'Could not save the score (server unreachable).' : ''; return; }
-  showRank(res);
-  if (mode === 'host') netSend({ k: 'hs', list: res.list, rank: res.rank, id: res.id });
+  if (res.flagged){ el.className = 'rankline bad'; el.textContent = '⚠ INTEGRITY CHECK FAILED — score not recorded: ' + res.flagged.join(' · '); }
+  else if (res.unranked){ el.className = 'rankline meh'; el.textContent = 'Not ranked: ' + res.unranked + '.'; }
+  else if (res.rank){ el.className = 'rankline new'; el.textContent = `🏆 NEW HIGHSCORE — #${res.rank} in ${label} top 20!`; }
+  else { el.className = 'rankline meh'; el.textContent = `Verified, but not in the ${label.toLowerCase()} top 20 this time.`; }
 }
 (function initScores(){
   document.getElementById('btnScores').onclick = () => openScores();
   document.getElementById('btnScoresClose').onclick = () => document.getElementById('scores').classList.add('hidden');
   for (const b of document.querySelectorAll('#scores .tab')) b.onclick = () => { hsTab = b.dataset.tab; renderScores(); };
-  addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('scores').classList.add('hidden'); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && !(e.target && e.target.tagName === 'TEXTAREA')) closeTopOverlay(); });
   if (location.protocol.startsWith('http')) loadScores();
+})();
+
+/* ---------- admin + helpdesk tickets ---------- */
+let adminKey = '';
+try { adminKey = sessionStorage.getItem('cad-admin') || ''; } catch(e){}
+async function api(method, url, body){
+  const h = {};
+  if (body) h['Content-Type'] = 'application/json';
+  if (adminKey) h['X-Admin-Key'] = adminKey;
+  let r;
+  try { r = await fetch(url, { method, headers: h, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' }); }
+  catch(e){ return { ok: false, error: 'game server unreachable' }; }
+  let d = {}; try { d = await r.json(); } catch(e){}
+  if (r.status === 403 && adminKey && /password/.test(d.error || '')) setAdmin('');
+  return r.ok ? Object.assign({ ok: true }, d) : { ok: false, status: r.status, error: d.error || ('HTTP ' + r.status) };
+}
+function setAdmin(k){
+  adminKey = k;
+  try { k ? sessionStorage.setItem('cad-admin', k) : sessionStorage.removeItem('cad-admin'); } catch(e){}
+  for (const b of document.querySelectorAll('.adminbtn')){ b.textContent = k ? '🔓 admin mode · log out' : '🔑 admin'; b.classList.toggle('adminon', !!k); }
+  renderScores(); renderTkList(); renderTkPane();
+}
+function openAdminLogin(){
+  if (adminKey){ setAdmin(''); return; }
+  document.getElementById('adminErr').textContent = '';
+  document.getElementById('adminPw').value = '';
+  document.getElementById('adminbox').classList.remove('hidden');
+  document.getElementById('adminPw').focus();
+}
+async function adminLogin(){
+  const pw = document.getElementById('adminPw').value;
+  if (!pw) return;
+  const r = await fetch('/api/admin', { headers: { 'X-Admin-Key': pw }, cache: 'no-store' }).then(async x => ({ ok: x.ok, d: await x.json().catch(() => ({})) }), () => ({ ok: false, d: { error: 'game server unreachable' } }));
+  if (!r.ok){ document.getElementById('adminErr').textContent = '✖ ' + (r.d.error || 'login failed'); return; }
+  document.getElementById('adminbox').classList.add('hidden');
+  setAdmin(pw);
+}
+
+let tkData = [], tkSel = 0, tkFilter = 'open', tkMode = 'empty', tkNotice = '', tkPollT = null;
+const TK_TYPE = { bug: '🐞 BUG', feature: '✨ FEATURE', other: '💬 OTHER' };
+const TK_PRIO = { low: 'LOW', normal: 'NORMAL', high: 'HIGH', critical: 'CRITICAL' };
+const TK_ST = { new: 'NEW', progress: 'IN PROGRESS', done: 'RESOLVED', rejected: "WON'T FIX" };
+const tkOpen = t => t.status === 'new' || t.status === 'progress';
+const fmtDT = ms => { const d = new Date(ms); return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); };
+const deskName = () => (document.getElementById('nameIn').value.trim() || pendingName || 'Anonymous').slice(0, 16);
+const badges = t => `<span class="b ${t.type}">${TK_TYPE[t.type] || t.type}</span><span class="b ${t.prio}">${TK_PRIO[t.prio] || t.prio}</span><span class="b st-${t.status}">${TK_ST[t.status] || t.status}</span>`;
+async function loadTickets(){
+  const r = await api('GET', '/api/tickets');
+  if (r.ok) tkData = r.tickets;
+  updateDeskBadge(); renderTkList();
+  return r;
+}
+function updateDeskBadge(){
+  const n = tkData.filter(tkOpen).length;
+  document.getElementById('btnDesk').textContent = '🎫 HELPDESK' + (n ? ` · ${n} open` : '');
+}
+function renderTkList(){
+  const box = document.getElementById('tkList'); if (!box) return;
+  for (const b of document.querySelectorAll('#desk .tab')) b.classList.toggle('on', b.dataset.f === tkFilter);
+  const rows = tkData.filter(t => tkFilter === 'all' || (tkFilter === 'open') === tkOpen(t));
+  if (!rows.length){ box.innerHTML = `<div class="tkempty">${tkFilter === 'open' ? 'No open tickets. 🎉<br>Either the game is perfect, or nobody reported anything yet.' : 'Nothing here.'}</div>`; return; }
+  box.innerHTML = rows.map(t => `<button class="tkrow${t.n === tkSel && tkMode === 'view' ? ' sel' : ''}" data-n="${t.n}">
+      <div class="tkline"><span class="tkkey">${t.key}</span>${badges(t)}</div>
+      <div class="tktitle">${escapeHtml(t.title)}</div>
+      <div class="tkmeta">${escapeHtml(t.author)} · ${fmtDT(t.created)}${t.comments.length ? ' · 💬 ' + t.comments.length : ''}</div></button>`).join('');
+  for (const el of box.querySelectorAll('.tkrow')) el.onclick = () => { tkSel = +el.dataset.n; tkMode = 'view'; tkNotice = ''; renderTkList(); renderTkPane(); };
+}
+function renderTkPane(){
+  const pane = document.getElementById('tkPane'); if (!pane) return;
+  const notice = tkNotice ? `<div class="notice">${tkNotice}</div>` : '';
+  if (tkMode === 'new'){
+    pane.innerHTML = `<div class="tkform">
+      <div class="tksec" style="margin-top:0">NEW TICKET</div>
+      <div class="row">
+        <label>TYPE<select id="tkType"><option value="bug">🐞 Bug</option><option value="feature">✨ Feature request</option><option value="other">💬 Other</option></select></label>
+        <label>PRIORITY<select id="tkPrio"><option value="low">Low</option><option value="normal" selected>Normal</option><option value="high">High</option><option value="critical">Critical (printer on fire)</option></select></label>
+        <label>YOUR NAME<input id="tkAuthor" maxlength="16" value="${escapeHtml(deskName())}"></label>
+      </div>
+      <label>SUMMARY<input id="tkTitle" maxlength="80" placeholder="e.g. Ping Storm hits printers behind walls"></label>
+      <label>DESCRIPTION<textarea id="tkDesc" maxlength="2000" rows="7" placeholder="What happened? What did you expect? Steps to reproduce / your idea in detail."></textarea></label>
+      <div style="display:flex;gap:10px;align-items:center"><button class="bigbtn" id="tkSubmit" style="margin:0">SUBMIT TICKET</button><button class="backbtn" id="tkCancel">cancel</button></div>
+      <div class="err" id="tkErr"></div></div>`;
+    document.getElementById('tkSubmit').onclick = submitTicket;
+    document.getElementById('tkCancel').onclick = () => { tkMode = 'empty'; renderTkPane(); };
+    document.getElementById('tkTitle').focus();
+    return;
+  }
+  const t = tkMode === 'view' && tkData.find(x => x.n === tkSel);
+  if (!t){
+    pane.innerHTML = notice + `<div class="tkempty">Select a ticket on the left, or open a new one with <b>+ NEW TICKET</b>.<br><br>
+      <span style="font-size:11px">Bugs, balancing complaints, feature wishes, new printer ideas — all welcome.</span></div>`;
+    return;
+  }
+  const adm = adminKey ? `<div class="tkadmin">ADMIN · STATUS
+      <select class="fld" id="tkStatus" style="width:auto">${Object.entries(TK_ST).map(([k, v]) => `<option value="${k}"${k === t.status ? ' selected' : ''}>${v}</option>`).join('')}</select>
+      <button class="backbtn danger" id="tkDelete">delete ticket</button></div>` : '';
+  pane.innerHTML = notice + `<div class="tkline"><span class="tkkey" style="font-size:14px">${t.key}</span>${badges(t)}</div>
+    <h3 class="tkh">${escapeHtml(t.title)}</h3>
+    <div class="tkmeta">opened by <b>${escapeHtml(t.author)}</b> · ${fmtDT(t.created)}${t.updated !== t.created ? ' · updated ' + fmtDT(t.updated) : ''}</div>
+    <div class="tkdesc">${t.desc ? escapeHtml(t.desc) : '<i style="color:var(--dim)">no description</i>'}</div>
+    ${adm}
+    <div class="tksec">COMMENTS · ${t.comments.length}</div>
+    ${t.comments.map(c => `<div class="tkc${c.admin ? ' adm' : ''}"><div class="tkcm"><b style="color:var(--ink)">${escapeHtml(c.author)}</b>${c.admin ? ' <span class="b high">ADMIN</span>' : ''} · ${fmtDT(c.date)}</div><div class="tkct">${escapeHtml(c.text)}</div></div>`).join('') || '<div class="tkmeta">No comments yet.</div>'}
+    <div class="tksec">ADD COMMENT AS ${escapeHtml(deskName())}</div>
+    <textarea class="fld" id="tkReply" rows="3" maxlength="1000" placeholder="Add details, +1, or a witty remark…"></textarea>
+    <div style="margin-top:8px"><button class="mbtn" id="tkReplyBtn">COMMENT</button></div>
+    <div class="err" id="tkErr"></div>`;
+  document.getElementById('tkReplyBtn').onclick = async () => {
+    const text = document.getElementById('tkReply').value.trim();
+    if (!text){ document.getElementById('tkErr').textContent = 'Write something first.'; return; }
+    const r = await api('POST', `/api/tickets/${t.n}/comments`, { author: deskName(), text });
+    if (!r.ok){ document.getElementById('tkErr').textContent = '✖ ' + r.error; return; }
+    tkData = r.tickets; tkNotice = ''; renderTkList(); renderTkPane(); updateDeskBadge();
+  };
+  if (adminKey){
+    document.getElementById('tkStatus').onchange = async e => {
+      const r = await api('PATCH', `/api/tickets/${t.n}`, { status: e.target.value });
+      if (!r.ok){ document.getElementById('tkErr').textContent = '✖ ' + r.error; return; }
+      tkData = r.tickets; tkNotice = `Status of ${t.key} set to ${TK_ST[e.target.value]}.`; renderTkList(); renderTkPane(); updateDeskBadge();
+    };
+    document.getElementById('tkDelete').onclick = async () => {
+      if (!confirm(`Delete ${t.key} "${t.title}" for good?`)) return;
+      const r = await api('DELETE', `/api/tickets/${t.n}`);
+      if (!r.ok){ document.getElementById('tkErr').textContent = '✖ ' + r.error; return; }
+      tkData = r.tickets; tkMode = 'empty'; tkNotice = `${t.key} deleted.`; renderTkList(); renderTkPane(); updateDeskBadge();
+    };
+  }
+}
+async function submitTicket(){
+  const $ = id => document.getElementById(id);
+  const body = { type: $('tkType').value, prio: $('tkPrio').value, author: $('tkAuthor').value.trim(), title: $('tkTitle').value.trim(), desc: $('tkDesc').value.trim() };
+  if (body.title.length < 3){ $('tkErr').textContent = 'Please write a short summary (at least 3 characters).'; $('tkTitle').focus(); return; }
+  $('tkSubmit').disabled = true;
+  const r = await api('POST', '/api/tickets', body);
+  if (!r.ok){ $('tkErr').textContent = '✖ ' + r.error; $('tkSubmit').disabled = false; return; }
+  tkData = r.tickets; tkSel = r.ticket.n; tkMode = 'view'; tkFilter = 'open';
+  tkNotice = `✔ Ticket <b>${r.ticket.key}</b> created. Thank you for your patience — your call is important to us.`;
+  renderTkList(); renderTkPane(); updateDeskBadge();
+}
+async function openDesk(){
+  document.getElementById('desk').classList.remove('hidden');
+  renderTkList(); renderTkPane();
+  const r = await loadTickets();
+  if (!r.ok){ tkNotice = ''; document.getElementById('tkList').innerHTML = `<div class="tkempty">✖ ${escapeHtml(r.error)}</div>`; }
+  renderTkPane();
+  clearInterval(tkPollT);
+  tkPollT = setInterval(() => { if (document.getElementById('desk').classList.contains('hidden')) clearInterval(tkPollT); else loadTickets(); }, 20000);
+}
+window.openDesk = openDesk;
+function closeTopOverlay(){
+  for (const id of ['adminbox', 'desk', 'scores']){
+    const el = document.getElementById(id);
+    if (!el.classList.contains('hidden')){ el.classList.add('hidden'); return; }
+  }
+}
+(function initDesk(){
+  const $ = id => document.getElementById(id);
+  $('btnDesk').onclick = openDesk;
+  $('btnDeskClose').onclick = () => $('desk').classList.add('hidden');
+  $('btnNewTicket').onclick = () => { tkMode = 'new'; tkNotice = ''; renderTkList(); renderTkPane(); };
+  for (const b of document.querySelectorAll('#desk .tab')) b.onclick = () => { tkFilter = b.dataset.f; renderTkList(); };
+  for (const b of document.querySelectorAll('.adminbtn')) b.onclick = openAdminLogin;
+  $('btnAdminGo').onclick = adminLogin;
+  $('adminPw').addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
+  $('btnAdminCancel').onclick = () => $('adminbox').classList.add('hidden');
+  setAdmin(adminKey);
+  if (location.protocol.startsWith('http')) loadTickets();
 })();
 
 /* ---------- lobby ---------- */
@@ -1039,7 +1285,7 @@ function startShift(){
 function afterWelcome(){
   document.getElementById('start').classList.add('hidden');
   showStartStep(); netBusy = false;
-  st = 0; myReady = false; lateJoin = false;
+  st = 0; myReady = false; lateJoin = false; lastHs = null;
   if (isHost()) newRun(CHARS.find(c => c.id === pendingChar) || CHARS[0]);
   state = 'lobby';
   document.getElementById('lobby').classList.remove('hidden');
@@ -1123,7 +1369,7 @@ function update(dt){
     for (let i = 0; i < batch; i++) spawnEnemy(pickType());
   }
   if (t > goonT && !boss){ goonT = t + 45; spawnEnemy('golem'); bigEvent('a toner golem approaches…', '#ffc857', me ? me.x : ARENA_W/2, (me ? me.y : ARENA_H/2) - 50); }
-  if (t > bossT && !boss && !winShown) spawnBoss();
+  if (t > bossT && !boss && (!winShown || endless)) spawnBoss();
 
   for (const p of players){
     let inp;
@@ -1548,7 +1794,6 @@ netMsg = function(m){
       if (state === 'playing') applySnap(d);
     }
     else if (d && d.k === 'lobby' && state === 'lobby' && !lateJoin) renderLobby(d.list);
-    else if (d && d.k === 'hs'){ showRank(d); loadScores(); }
     else if (d && d.k === 'running' && d.for === myId && state === 'lobby'){ lateJoin = true; renderLobby([]); }
     else if (d && d.k === 'cards' && d.for === myId) clientCards(d);
     return;
@@ -1583,10 +1828,9 @@ function hostStateUI(){
   if (st === 2){ document.getElementById('winStats').innerHTML = statBlock(); document.getElementById('win').classList.remove('hidden'); }
   else document.getElementById('win').classList.add('hidden');
   if (st === 3){
-    if (mode === 'host'){ netSend(buildSnap()); netEvents.h = []; netEvents.f = []; netEvents.ev = []; }   // clients must learn about the game over
+    if (mode !== 'client'){ netSend(buildSnap()); netEvents.h = []; netEvents.f = []; netEvents.ev = []; }   // clients + server must learn about the game over
     document.getElementById('levelup').classList.add('hidden');
     showDead('SIGNAL LOST', 'The printers won this shift. Ticket closed, unresolved.');
-    submitScore();
   }
 }
 function loop(now){
