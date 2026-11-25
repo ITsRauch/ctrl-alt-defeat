@@ -41,6 +41,18 @@ nothing is stored, the reason is shown to everyone and logged (`INTEGRITY FAIL .
 This stops DevTools number tweaking; someone forging whole snapshots by script can still get through.
 The limits live in `server.js` (`CLS`, `WDMG`, ...) and must be updated when balancing changes.
 
+## Co-op XP & balancing (v1.3)
+- **Shared team XP:** one XP bar for the whole team; each extra admin adds +55 % XP per level
+  (`TEAM_XP_PER_PLAYER`). On a team level-up every admin picks a card at the same time; the shift
+  resumes when all are done. Late joiners start at the team level and pick catch-up cards while the
+  others keep playing (they are protected meanwhile).
+- Classes: Sysadmin 135 speed / +20 % damage, Helpdesk 172 speed / 85 HP, DevOps 125 speed /
+  10 % less damage taken / 0.9 HP/s regen. Every level adds +2 % damage; printer HP doubles every 110 s.
+- Coffee: 3 % drop, heals 25 % max HP, +20 % speed for 5 s. Revive: 80 px, 2 s, reviver takes half damage.
+- Balance is measured, not guessed: `npm run lab` (weapon DPS / passive effects) and
+  `npm run lab:survival -- [file] [seeds]` (bot plays every class, survival time per class).
+  Remember to update the anti-cheat limits in `server.js` with any balance change.
+
 ## Field manual
 **📖 FIELD MANUAL** in the menu: all printers (stats, behaviour, when they appear), weapons (level 1 → 5,
 which patches boost them), patches, pickups and admin classes. Values are read from the game data
@@ -69,6 +81,7 @@ The game itself has **no dependencies**. The tests drive real headless Chrome in
     npm test                               # api, ui/regression, anti-cheat, endless boss  (~2 min)
     npm run test:edge                      # maxed builds + real 150 s boss run  (~3 min)
     npm run lab                            # power-up lab: DPS per weapon level/passive, passive effects
+    npm run lab:survival                   # survival lab: bot plays each class (fixed seeds)
 
 Run them after every change to `index.html` / `server.js`, especially balancing changes:
 the anti-cheat limits in `server.js` (`CLS`, `WDMG`, ...) must match the game constants.

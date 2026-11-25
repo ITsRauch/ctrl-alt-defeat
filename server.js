@@ -99,13 +99,13 @@ function insertScore(entry) {
  * the score is recorded from what the server saw, never from what a client claims.
  * Keep these numbers in sync with CHARS / fireWeapon / PDEF in index.html.        */
 const CLS = [
-  { id: 'sysadmin', hp: 110, spd: 112,        dmg: 1.12 },
+  { id: 'sysadmin', hp: 110, spd: 135,        dmg: 1.2 },
   { id: 'helpdesk', hp: 85,  spd: 138 * 1.25, dmg: 1 },
-  { id: 'devops',   hp: 135, spd: 96,         dmg: 1 },
+  { id: 'devops',   hp: 135, spd: 125,        dmg: 1 },
 ];
 const WIDS = ['mouse', 'toner', 'shout', 'badge', 'ping', 'keyboard', 'whip'];          // WDEF order
-const WDMG = { mouse: [12, 5], toner: [7, 2], shout: [4, 2], badge: [10, 3], ping: [22, 6], keyboard: [20, 7], whip: [24, 7] };   // base, +per level
-const MAX_HP_BONUS = 100, MAX_SPEED_MUL = 1.4, MAX_WEAPONS = 6, MAX_WLVL = 5;
+const WDMG = { mouse: [14, 6], toner: [9, 3], shout: [4, 2], badge: [9, 2], ping: [22, 6], keyboard: [20, 7], whip: [24, 7] };   // base, +per level
+const MAX_HP_BONUS = 100, MAX_SPEED_MUL = 1.4 * 1.2, MAX_WEAPONS = 6, MAX_WLVL = 5;   // boots 5 x coffee rush
 const XP_NEED = [0, 0];                // total XP needed to reach level L
 for (let L = 2, next = 8, sum = 0; L <= 200; L++) { sum += next; XP_NEED[L] = sum; next = Math.round(next * 1.32); }
 const fmtNames = r => [...r.roster.values()].map(p => p.n).join(', ');
@@ -137,7 +137,7 @@ function witness(room, S) {
     r.kills.set(id, kl | 0);
     if ((lv | 0) > r.level) r.level = lv | 0;
     if (!Array.isArray(wflat) || wflat.length / 3 > MAX_WEAPONS) { flag(`${name}: too many weapons`); continue; }
-    const dmgPassive = 1 + 0.12 * Math.min(5, Math.max(0, (lv | 0) - 1));
+    const dmgPassive = (1 + 0.12 * Math.min(5, Math.max(0, (lv | 0) - 1))) * (1 + 0.02 * Math.max(0, (lv | 0) - 1));   // dmg patch + 2 %/level
     for (let i = 0; i < wflat.length; i += 3) {
       const w = WDMG[WIDS[wflat[i]]], wl = wflat[i + 1] | 0;
       if (!w || wl < 1 || wl > MAX_WLVL) { flag(`${name}: impossible weapon`); continue; }

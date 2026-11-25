@@ -57,6 +57,7 @@
     font-size:13px;color:var(--lime);letter-spacing:1px}
   .err{color:var(--red);font-size:13px;min-height:18px;margin-top:8px}
   /* --- start menu --- */
+  #stepMode,#stepChar{display:flex;flex-direction:column;align-items:center;width:100%}
   .namefield{display:flex;align-items:center;gap:10px;margin:4px 0 18px;font-size:12px;letter-spacing:2px;color:var(--dim)}
   .namefield input{width:200px}
   .modes{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:stretch}
@@ -252,7 +253,7 @@
           <li><b>The host's browser runs the game</b> — host, keep that tab open, or the shift ends for everyone.</li>
         </ol>
         <div class="ctl"><span class="key">WASD</span> / <span class="key">← ↑ → ↓</span> move &nbsp;·&nbsp; weapons fire <b>automatically</b> &nbsp;·&nbsp; collect green RAM for XP &nbsp;·&nbsp;
-          stand next to a downed colleague for 3 s to revive them &nbsp;·&nbsp; <span class="key">P</span> pause (host only)<br>
+          stand next to a downed colleague for 2 s to revive them &nbsp;·&nbsp; co-op shares one XP bar &nbsp;·&nbsp; <span class="key">P</span> pause (host only)<br>
           Found a bug or have an idea? Open a ticket at the <b>🎫 HELPDESK</b>. Scores are verified by the server — tampering gets you disqualified.</div>
       </div>
     </div>
@@ -343,7 +344,7 @@
 
   <div id="levelup" class="overlay hidden">
     <h1 style="font-size:26px">SYSTEM UPDATE ▸ LEVEL <span id="lvlNum">2</span></h1>
-    <div class="tagline" style="margin-bottom:18px">Choose a patch. <span style="color:#ffc857">The shift is paused for everyone.</span></div>
+    <div class="tagline" style="margin-bottom:18px" id="lvlSub">Choose a patch.</div>
     <div id="cards"></div>
   </div>
 
@@ -431,19 +432,20 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) clear
 
 /* ---------- world / defs (shared) ---------- */
 const ARENA_W = 3400, ARENA_H = 2600;
+const REVIVE_R = 80, REVIVE_T = 2;           // revive: stand within 80 px for 2 s
 const CHARS = [
-  { id: 'sysadmin', name: 'Mid-Level Sysadmin', hp: 110, spd: 112, weapon: 'mouse',
-    perk: 'Tenure bonus: +12% damage. Boring, effective.', dmgMul: 1.12 },
+  { id: 'sysadmin', name: 'Mid-Level Sysadmin', hp: 110, spd: 135, weapon: 'mouse',
+    perk: 'Tenure bonus: +20% damage on every weapon. Boring, effective.', dmgMul: 1.2 },
   { id: 'helpdesk', name: 'Helpdesk Tier 1', hp: 85, spd: 138, weapon: 'ping',
     perk: 'Fast feet, thin patience: +25% speed, low HP. Ping is your wrath.', spdMul: 1.25 },
-  { id: 'devops', name: 'DevOps Engineer', hp: 135, spd: 96, weapon: 'shout',
-    perk: 'On-call aura: +20% area. Never sleeps, never flees.', areaMul: 1.2 },
+  { id: 'devops', name: 'DevOps Engineer', hp: 135, spd: 125, weapon: 'shout',
+    perk: 'On-call tank: +20% area, takes 10% less damage and regenerates 0.9 HP/s. Never sleeps.', areaMul: 1.2, dmgTaken: .9, regen: .9 },
 ];
 const WDEF = {
-  mouse:    { name: 'Wireless Mouse',   desc: 'Auto-fires cursors at the nearest threat.', cd: .75, stats: l => `dmg ${12+(l-1)*5}` },
-  toner:    { name: 'Toner Spray',      desc: 'Shotgun blast of cursed toner.', cd: 1.3, stats: l => `${3+(l>=3?1:0)+(l>=5?1:0)} pellets · dmg ${7+(l-1)*2}` },
+  mouse:    { name: 'Wireless Mouse',   desc: 'Auto-fires homing cursors at the nearest threat; pierces from level 3.', cd: .6, stats: l => `dmg ${14+(l-1)*6}${l >= 3 ? ' · pierces 1' : ''}` },
+  toner:    { name: 'Toner Spray',      desc: 'Shotgun blast of cursed toner at close-to-mid range.', cd: 1.1, stats: l => `${4+(l>=3?1:0)+(l>=5?1:0)} pellets · dmg ${9+(l-1)*3}` },
   shout:    { name: 'Helpdesk Shout',   desc: '"Have you tried turning it off?" Damaging aura.', cd: 5, stats: l => `dmg ${4+(l-1)*2} · r ${90+(l-1)*20}` },
-  badge:    { name: 'ID Badge Orbit',   desc: 'Your badge circles you, smacking firmware.', cd: 5, stats: l => `${1+l} badges · dmg ${10+(l-1)*3}` },
+  badge:    { name: 'ID Badge Orbit',   desc: 'Your badge circles you, smacking firmware.', cd: 5, stats: l => `${1+l} badges · dmg ${9+(l-1)*2}` },
   ping:     { name: 'Ping Storm',       desc: 'Lightning strikes the nearest printers and splashes around them.', cd: 1.6, stats: l => `${1+l} strikes · dmg ${22+(l-1)*6}` },
   keyboard: { name: 'Keyboard Boomerang', desc: 'Mechanical keyboard flies out, piercing everything.', cd: 1.4, stats: l => `dmg ${20+(l-1)*7} · pierces` },
   whip:     { name: 'Ethernet Whip',    desc: 'Cracks a cable in a wide cone.', cd: 1.1, stats: l => `dmg ${24+(l-1)*7} · cone` },
@@ -559,13 +561,15 @@ function hostMsg(d){              // host receives from a client
     if (state !== 'lobby' && !d.late){ netSend({ k: 'running', for: d.from }); return; }   // shift running: let them pick a class first
     const p = addPlayer(CHARS[clamp(d.cid|0, 0, 2)], d.from, String(d.name||'Admin').slice(0,16));
     p.ready = false;
-    if (d.late && me){ p.x = clamp(me.x + rnd(-50, 50), 20, ARENA_W - 20); p.y = clamp(me.y + rnd(-50, 50), 20, ARENA_H - 20); p.iframe = 2; bigEvent(p.name + ' joined the shift!', '#7cfc9b', p.x, p.y - 40); }
+    if (d.late && me){ p.x = clamp(me.x + rnd(-50, 50), 20, ARENA_W - 20); p.y = clamp(me.y + rnd(-50, 50), 20, ARENA_H - 20); p.iframe = 2; bigEvent(p.name + ' joined the shift!', '#7cfc9b', p.x, p.y - 40);
+      p.level = teamLevel; p.pending = teamLevel - 1; p.catchup = p.pending > 0; }
+    syncTeamXp();
     lobbyUpdate();
   }
   else if (d.k === 'cls'){ const p = players.find(p => p.id === d.from); if (p && state === 'lobby'){ setClass(p, CHARS[clamp(d.cid|0, 0, 2)]); lobbyUpdate(); } }
   else if (d.k === 'rdy'){ const p = players.find(p => p.id === d.from); if (p && state === 'lobby'){ p.ready = !!d.v; lobbyUpdate(); } }
   else if (d.k === 'i'){ const p = players.find(p => p.id === d.from); if (p) p.in = { mx: clamp(d.mx,-1,1), my: clamp(d.my,-1,1) }; }
-  else if (d.k === 'pick'){ const p = players.find(p => p.id === d.from); if (p && p.offered && p.offered[d.n]) { applyCard(p, p.offered[d.n]); p.offered = null; p.pending--; } }
+  else if (d.k === 'pick'){ const p = players.find(p => p.id === d.from); if (p && p.offered && p.offered[d.n]) { applyCard(p, p.offered[d.n]); p.offered = null; p.pending--; if (p.pending <= 0) p.catchup = false; } }
   else if (d.k === 'cont' || d.k === 'quit') applyHostCmd(d.k, d.from);
 }
 
@@ -586,6 +590,7 @@ function addPlayer(ch, id, name){
 }
 let runId = '', runKills = 0, runBosses = 0, runMaxLvl = 1, runRoster = new Map(), hsSent = false, myHsId = '';
 function newRun(ch){
+  teamXp = 0; teamLevel = 1; teamBase = 8;
   runId = Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(16).padStart(2, '0')).join('');
   runKills = 0; runBosses = 0; runMaxLvl = 1; runRoster = new Map(); hsSent = false;
   players = []; me = null;
@@ -620,7 +625,7 @@ function spawnEnemy(type, anywhere, px, py){
     x = clamp(ref.x + Math.cos(a) * dd, 40, ARENA_W - 40);
     y = clamp(ref.y + Math.sin(a) * dd, 40, ARENA_H - 40);
   }
-  const hs = 1 + t / 75, ds = 1 + t / 240;
+  const hs = 1 + t / 110, ds = 1 + t / 240;   // printer HP +100 % every 110 s (was 75 s)
   enemies.push({ id: enemyId++, type, x, y, hp: d.hp * hs, maxhp: d.hp * hs, spd: d.spd * (d.boss ? 1 : rnd(.9, 1.12)),
     r: d.r, dmg: d.dmg * ds, xp: d.xp, phase: rnd(0, 7), flash: 0, kx: 0, ky: 0, boss: !!d.boss,
     shootT: rnd(1.5, 3.5), dashT: rnd(1, 3), bob: rnd(0, 7), hitCd: {} });
@@ -653,7 +658,8 @@ function nearestEnemy(x, y, maxD, exclude){
 function addProj(p, x, y, ang, spd, dmg, life, kind, r, pierce, home){
   projs.push({ x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd, dmg, life, kind, r: r || 5, pierce: pierce || 0, hit: [], home: home || 0, ang, own: p });
 }
-function wDmg(p, base){ return base * p.chDmg * (1 + .12 * (p.pass.dmg || 0)); }
+function wDmg(p, base){ return base * p.chDmg * (1 + .12 * (p.pass.dmg || 0)) * (1 + .02 * ((p.level || 1) - 1)); }   // +2 % per level
+function moveSpeed(p){ return p.speed * (1 + .08 * (p.pass.boots || 0)) * ((p.buffT || 0) > 0 ? 1.2 : 1); }   // boots + coffee rush
 function areaMul(p){ return p.chArea * (1 + .12 * (p.pass.area || 0)); }
 function badgeGeom(p){ const a = areaMul(p); return { R: 78, hr: 12 * a, sz: a }; }   // Zoom Lens grows the badges, not the orbit (close printers stay covered)
 function atkMul(p){ return 1 + .12 * (p.pass.atk || 0); }
@@ -699,7 +705,7 @@ function killEnemy(e, srcP){
     boss = null; bossT = t + 120;          // next boss (night shift) 2 minutes after a kill
   }
   if (!e.boss && Math.random() < .015) pickups.push({ x: e.x, y: e.y, kind: 'magnet', life: 999, bob: rnd(0,7) });
-  if (!e.boss && Math.random() < .012) pickups.push({ x: e.x, y: e.y, kind: 'coffee', life: 999, bob: rnd(0,7) });
+  if (!e.boss && Math.random() < .03) pickups.push({ x: e.x, y: e.y, kind: 'coffee', life: 999, bob: rnd(0,7) });
 }
 function dropXp(x, y, v){
   if (pickups.length > 260){ const g = pickups[irnd(0, pickups.length - 1)]; if (g.kind === 'xp'){ g.v += v; return; } }
@@ -707,7 +713,7 @@ function dropXp(x, y, v){
 }
 function hurtPlayer(p, dmg){
   if (!isHost() || p.dn > 0 || p.out || p.iframe > 0) return;
-  const red = 1 - Math.min(.4, .08 * (p.pass.glasses || 0));
+  const red = (1 - Math.min(.4, .08 * (p.pass.glasses || 0))) * (p.ch.dmgTaken || 1) * (p.reviving ? .5 : 1);
   p.hp -= Math.max(1, dmg * red);
   p.iframe = .55; p.hitFlash = .3;
   if (p === me){ shake = Math.max(shake, 7); sndHurt(); }
@@ -719,13 +725,22 @@ function hurtPlayer(p, dmg){
 }
 
 /* ---------- XP / cards (host rolls, client picks) ---------- */
+// Co-op: one shared XP bar. Each extra admin in the shift needs +55 % XP per level;
+// on a team level-up every admin picks a card at the same time.
+let teamXp = 0, teamLevel = 1, teamBase = 8;
+const TEAM_XP_PER_PLAYER = .55;
+function teamScale(){ return 1 + TEAM_XP_PER_PLAYER * (Math.max(1, players.filter(p => !p.out).length) - 1); }
+function teamNext(){ return Math.round(teamBase * teamScale()); }
+function syncTeamXp(){ const nx = teamNext(); for (const q of players){ q.xp = teamXp; q.next = nx; } }
 function gainXp(p, v){
-  p.xp += v;
-  while (p.xp >= p.next){
-    p.xp -= p.next; p.level++; if (p.level > runMaxLvl) runMaxLvl = p.level;
-    p.next = Math.round(p.next * 1.32);
-    p.pending++;
+  teamXp += v;
+  for (let nx = teamNext(); teamXp >= nx; nx = teamNext()){
+    teamXp -= nx; teamLevel++; teamBase = Math.round(teamBase * 1.32);
+    if (teamLevel > runMaxLvl) runMaxLvl = teamLevel;
+    for (const q of players) if (!q.out){ q.level = teamLevel; q.pending++; }
+    if (players.length > 1 && me) bigEvent('TEAM LEVEL ' + teamLevel + '!', '#54c8ff', me.x, me.y - 70);
   }
+  syncTeamXp();
 }
 function rollCards(p){
   const pool = [];
@@ -752,6 +767,9 @@ function applyCard(p, c){
 }
 function showCards(cards){           // local UI — this player chooses
   document.getElementById('lvlNum').textContent = me ? me.level : 1;
+  document.getElementById('lvlSub').innerHTML = mode === 'solo' ? 'Choose a patch. <span style="color:#ffc857">The shift is paused.</span>'
+    : me && me.catchup ? 'Catch-up patches for joining late — <span style="color:#ffc857">the others keep playing, you are protected meanwhile.</span>'
+    : 'TEAM LEVEL UP — every admin picks a patch now. <span style="color:#ffc857">The shift continues when everyone is done.</span>';
   const box = document.getElementById('cards'); box.innerHTML = '';
   for (let i = 0; i < cards.length; i++){
     const c = cards[i];
@@ -773,6 +791,7 @@ function showCards(cards){           // local UI — this player chooses
 
 /* ---------- snapshot (host -> clients, 20 Hz) ---------- */
 function buildSnap(){
+  syncTeamXp();
   const S = { k: 's', t: Math.round(t * 10) / 10, st, dl: players.length, pk: pendingCount(), bs: boss ? Math.round(boss.hp) : -1, bsn: bossN, el: endless ? 1 : 0 };
   S.p = players.map(p => {
     const wflat = [];
@@ -781,7 +800,7 @@ function buildSnap(){
             Math.round(p.face * 100) / 100, p.out ? -1 : Math.round(p.dn * 10) / 10, Math.round((p.rv || 0) * 10) / 10,
             p.level, p.kills, Math.round(p.xp), p.next,
             CHARS.findIndex(c => c.id === p.ch.id), wflat, p.pass.area || 0, p.name,
-            Math.round(p.speed * (1 + .08 * (p.pass.boots || 0)))];
+            Math.round(moveSpeed(p))];
   });
   S.e = enemies.map(e => [e.id, EIDS.indexOf(e.type), Math.round(e.x), Math.round(e.y), Math.round(e.hp)]);
   S.j = projs.map(pr => [Math.round(pr.x), Math.round(pr.y), ['cursor','toner','key'].indexOf(pr.kind), Math.round((pr.ang||0)*10)/10]);
@@ -790,7 +809,7 @@ function buildSnap(){
   S.f = netEvents.f; S.h = netEvents.h; S.ev = netEvents.ev;
   return S;
 }
-function pendingCount(){ return players.reduce((a, p) => a + (p.pending > 0 ? 1 : 0), 0); }
+function pendingCount(){ return players.reduce((a, p) => a + (p.pending > 0 && !p.catchup && !p.out ? 1 : 0), 0); }
 let snapT = 0;
 function hostNetTick(dt){
   snapT -= dt;
@@ -803,16 +822,16 @@ function hostNetTick(dt){
     for (const p of players){
       if (p.pending > 0 && !p.offered){
         p.offered = rollCards(p); p.offT = 1.5;
-        if (st === 0) st = 1;
+        if (st === 0 && !p.catchup) st = 1;            // catch-up picks of late joiners don't freeze the team
         if (p === me) showCards(p.offered);
-        else netSend({ k: 'cards', for: p.id, cards: p.offered });
-      } else if (p.offered && p !== me && (p.offT -= .05) <= 0){ p.offT = 1.5; netSend({ k: 'cards', for: p.id, cards: p.offered }); }
+        else netSend({ k: 'cards', for: p.id, cards: p.offered, cu: p.catchup ? 1 : 0 });
+      } else if (p.offered && p !== me && (p.offT -= .05) <= 0){ p.offT = 1.5; netSend({ k: 'cards', for: p.id, cards: p.offered, cu: p.catchup ? 1 : 0 }); }
     }
-    if (st === 1 && players.every(p => p.pending <= 0)) st = 0;
+    if (st === 1 && players.every(p => p.pending <= 0 || p.catchup || p.out)) st = 0;
   }
 }
 // client applying card offers from host
-function clientCards(d){ if (d.for === myId && !cardsOpen()) showCards(d.cards); }
+function clientCards(d){ if (d.for === myId && !cardsOpen()){ if (me) me.catchup = !!d.cu; showCards(d.cards); } }
 function cardsOpen(){ return !document.getElementById('levelup').classList.contains('hidden'); }
 
 /* ---------- client snapshot application ---------- */
@@ -1087,7 +1106,7 @@ const MAN_BOOST = { mouse: 'Keyboard · Overclock · Critical Thinking (Zoom Len
 const MAN_P = { coffee: '☕', dmg: '⌨️', atk: '⚡', boots: '👟', area: '🔍', xpup: '📚', magnet: '🧲', crit: '🎯', glasses: '🥽' };
 const MAN_PICK = [
   { kind: 'xp', name: 'RAM Stick', tags: ['XP'], desc: 'Dropped by every printer. Walk close and it flies to you (80 px pickup radius, more with Badge Reel). Fill the blue bar to level up.' },
-  { kind: 'coffee', name: 'Hot Coffee', tags: ['+30 HP'], desc: 'Heals 30 HP. 1.2 % drop chance per printer, guaranteed from Toner Golems and the Main Printer.' },
+  { kind: 'coffee', name: 'Hot Coffee', tags: ['+25 % HP', 'RUSH'], desc: 'Heals 25 % of your max HP and gives +20 % speed for 5 s. 3 % drop chance per printer, guaranteed from Toner Golems and the Main Printer.' },
   { kind: 'magnet', name: 'Surge Protector', tags: ['MAGNET'], desc: 'Pulls every RAM stick on the whole floor to you at once. 1.5 % drop chance per printer.' },
 ];
 let manTab = 'printers';
@@ -1110,7 +1129,7 @@ function renderManual(){
       card(icon, `<h3>${d.name}</h3><div class="mtags">${m.tags.map(x => tg(x, x === 'BOSS' || x === 'ELITE' ? 'critical' : x === 'RANGED' || x === 'DASH' ? 'high' : '')).join('')}</div>
         <p>${m.desc}</p><div class="mst"><b>HP</b> ${d.hp} · <b>DMG</b> ${d.dmg} · <b>SPEED</b> ${d.spd} · <b>XP</b> ${d.xp}<br><b>appears</b> ${m.when}</div>`);
     }
-    note.textContent = 'Printers get tougher the longer the shift runs: +100 % HP every 75 s and +100 % contact damage every 4 minutes. Values above are the starting values. Speed for comparison: admins walk at 96–172.';
+    note.textContent = 'Printers get tougher the longer the shift runs: +100 % HP every 110 s and +100 % contact damage every 4 minutes. Values above are the starting values. Speed for comparison: admins walk at 96–172.';
   } else if (manTab === 'weapons'){
     for (const id of WIDS){
       const w = WDEF[id], starters = CHARS.filter(ch => ch.weapon === id).map(ch => ch.name);
@@ -1119,7 +1138,7 @@ function renderManual(){
       card(icon, `<h3>${w.name}</h3><div class="mtags">${starters.length ? tg('START: ' + starters.join(', ').toUpperCase(), 'feature') : tg('LEVEL-UP CARD')}${tg(cd.toUpperCase())}</div>
         <p>${w.desc}</p><div class="mst"><b>Lvl 1</b> ${w.stats(1)}<br><b>Lvl 5</b> ${w.stats(5)}<br><b>boosted by</b> ${MAN_BOOST[id] || ''}</div>`);
     }
-    note.textContent = 'Every level-up offers 3 cards: a new weapon, a weapon upgrade or a patch. You can carry up to 6 weapons, each up to level 5. Weapons aim and fire on their own.';
+    note.textContent = 'Every level-up offers 3 cards: a new weapon, a weapon upgrade or a patch. You can carry up to 6 weapons, each up to level 5. Weapons aim and fire on their own, and every level adds +2 % damage. In co-op the team shares one XP bar (+55 % XP needed per extra admin) and everybody picks at the same time.';
   } else if (manTab === 'patches'){
     for (const id of PIDS){
       const pd = PDEF[id];
@@ -1142,7 +1161,7 @@ function renderManual(){
       card(icon, `<h3>${ch.name}</h3><div class="mtags">${tg(ch.hp + ' HP')}${tg('SPEED ' + Math.round(ch.spd * (ch.spdMul || 1)))}${tg('START: ' + WDEF[ch.weapon].name.toUpperCase(), 'feature')}</div>
         <p>${ch.perk}</p>`);
     }
-    note.textContent = 'Downed admins can be rebooted: stand next to them for 3 s within 15 s. After that they are OUT for the rest of the shift.';
+    note.textContent = 'Downed admins can be rebooted: stand within 80 px of them for 2 s (the dashed circle) within 15 s — you take half damage while rebooting. After that they are OUT for the rest of the shift.';
   }
 }
 function openManual(tab){ if (tab) manTab = tab; document.getElementById('manual').classList.remove('hidden'); renderManual(); }
@@ -1411,13 +1430,14 @@ function afterWelcome(){
 function movePlayer(p, mx, my, dt){
   if (mx || my){
     const m = Math.hypot(mx, my); mx /= m; my /= m;
-    const spd = p.speed * (1 + .08 * (p.pass.boots || 0));
+    const spd = moveSpeed(p);
     p.x = clamp(p.x + mx * spd * dt, 20, ARENA_W - 20);
     p.y = clamp(p.y + my * spd * dt, 20, ARENA_H - 20);
     p.face = Math.atan2(my, mx);
   }
   p.iframe = Math.max(0, p.iframe - dt);
   p.hitFlash = Math.max(0, p.hitFlash - dt);
+  if (p.buffT > 0) p.buffT -= dt;
 }
 function updateWeapons(p, dt){
   const as = 1 + .12 * (p.pass.atk || 0);
@@ -1442,9 +1462,9 @@ function fireWeapon(p, w){
   const l = w.lvl, aim = nearestEnemy(p.x, p.y, 650);
   const ang = aim ? Math.atan2(aim.y - p.y, aim.x - p.x) : p.face;
   switch (w.id){
-    case 'mouse': addProj(p, p.x, p.y, ang, 430, wDmg(p, 12 + (l-1)*5), 1.4, 'cursor', 6 * areaMul(p), l >= 3 ? 1 : 0, 3); if (p === me) sndShot(); break;
-    case 'toner': { const n = 3 + (l >= 3 ? 1 : 0) + (l >= 5 ? 1 : 0);
-      for (let i = 0; i < n; i++) addProj(p, p.x, p.y, ang + rnd(-.32, .32), rnd(260, 340), wDmg(p, 7 + (l-1)*2), .38 * areaMul(p), 'toner', 5 * areaMul(p), 0, 0);
+    case 'mouse': addProj(p, p.x, p.y, ang, 460, wDmg(p, 14 + (l-1)*6), 1.4, 'cursor', 6 * areaMul(p), l >= 3 ? 1 : 0, 3); if (p === me) sndShot(); break;
+    case 'toner': { const n = 4 + (l >= 3 ? 1 : 0) + (l >= 5 ? 1 : 0);
+      for (let i = 0; i < n; i++) addProj(p, p.x, p.y, ang + rnd(-.3, .3), rnd(300, 370), wDmg(p, 9 + (l-1)*3), .6 * areaMul(p), 'toner', 6 * areaMul(p), l >= 4 ? 1 : 0, 0);
       if (p === me) sndShot(); break; }
     case 'keyboard': { const a2 = ang; projs.push({ x: p.x, y: p.y, vx: Math.cos(a2)*380, vy: Math.sin(a2)*380, dmg: wDmg(p, 20 + (l-1)*7), life: 1.5, kind: 'key', r: 11 * areaMul(p), pierce: 99, hit: [], home: 0, boomer: true, phase: 0, ang: a2, own: p });
       if (p === me) sndShot(); break; }
@@ -1495,13 +1515,16 @@ function update(dt){
     else inp = p.in || { mx: 0, my: 0 };
     movePlayer(p, inp.mx, inp.my, dt);
     updateWeapons(p, dt);
-    // revive check: another player standing near a downed one
+    if (p.ch.regen && p.hp < p.maxhp) p.hp = Math.min(p.maxhp, p.hp + p.ch.regen * dt);
+    if (p.catchup) p.iframe = Math.max(p.iframe, .3);           // late joiner picking catch-up cards
+    // revive check: another player standing near a downed one (reviver takes half damage meanwhile)
+    p.reviving = false;
     for (const q of players){
       if (q.dn <= 0 || q === p) continue;
-      if (dist(p.x, p.y, q.x, q.y) < 46){
-        q.rv = (q.rv || 0) + dt;
-        if (q.rv >= 3){ q.dn = 0; q.rv = 0; q.hp = Math.max(1, Math.round(q.maxhp * .4)); bigEvent(q.name + ' rebooted!', '#7cfc9b', q.x, q.y - 40); blip(700,.15,'triangle',.06,300); }
-      } else q.rv = Math.max(0, (q.rv || 0) - dt * 2);
+      if (dist(p.x, p.y, q.x, q.y) < REVIVE_R){
+        q.rv = (q.rv || 0) + dt; p.reviving = true;
+        if (q.rv >= REVIVE_T){ q.dn = 0; q.rv = 0; q.hp = Math.max(1, Math.round(q.maxhp * .4)); bigEvent(q.name + ' rebooted!', '#7cfc9b', q.x, q.y - 40); blip(700,.15,'triangle',.06,300); }
+      } else q.rv = Math.max(0, (q.rv || 0) - dt * .5);
     }
   }
   updateEnemies(dt);
@@ -1518,7 +1541,8 @@ function update(dt){
       }
       if (d < 22){
         if (u.kind === 'xp'){ gainXp(p, u.v); if (p === me) sndPickup(); }
-        else if (u.kind === 'coffee'){ p.hp = Math.min(p.maxhp, p.hp + 30); if (p === me) popText(p.x, p.y, '+30 ☕', '#7CFC9B'); blip(660,.1,'sine',.05,300); }
+        else if (u.kind === 'coffee'){ const h = Math.round(p.maxhp * .25); p.hp = Math.min(p.maxhp, p.hp + h); p.buffT = 5;
+          popText(p.x, p.y, `+${h} ☕ RUSH!`, '#7CFC9B'); blip(660,.1,'sine',.05,300); }
         else if (u.kind === 'magnet'){
           for (const q of pickups) if (q.kind === 'xp'){ const a = Math.atan2(p.y - q.y, p.x - q.x); q.x = p.x + Math.cos(a) * 60; q.y = p.y + Math.sin(a) * 60; }
           if (p === me) popText(p.x, p.y, 'SURGE PROTECTOR!', '#54c8ff');
@@ -1612,7 +1636,7 @@ function updateProjectiles(dt){
     if (p.out) continue;
     for (const w of p.weapons){
       if (w.id !== 'badge') continue;
-      const n = 1 + w.lvl, { R, hr } = badgeGeom(p), cd = .5 / atkMul(p);
+      const n = 1 + w.lvl, { R, hr } = badgeGeom(p), cd = .6 / atkMul(p);
       for (let i = 0; i < n; i++){
         const ba = w.ang + (i / n) * Math.PI * 2;
         const bx = p.x + Math.cos(ba) * R, by = p.y + Math.sin(ba) * R;
@@ -1620,7 +1644,7 @@ function updateProjectiles(dt){
           if (e.hp <= 0) continue;
           const key = 'b' + i;
           if ((e.hitCd[key] || 0) > t) continue;
-          if (dist(bx, by, e.x, e.y) < hr + e.r){ hurtEnemy(e, wDmg(p, 10 + (w.lvl-1)*3), false, p); e.hitCd[key] = t + cd; }
+          if (dist(bx, by, e.x, e.y) < hr + e.r){ hurtEnemy(e, wDmg(p, 9 + (w.lvl-1)*2), false, p); e.hitCd[key] = t + cd; }
         }
       }
     }
@@ -1743,7 +1767,8 @@ function drawAdmin(x, y, p, isMe){
   ctx.fillRect(x - 14, y - 23, 28 * clamp(p.hp / p.maxhp, 0, 1), 3);
   if (p.dn > 0 && p.rv > 0){
     ctx.strokeStyle = '#7cfc9b'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(x, y, 22, -Math.PI/2, -Math.PI/2 + (p.rv/3) * Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, y, 22, -Math.PI/2, -Math.PI/2 + (p.rv/REVIVE_T) * Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(124,252,155,.25)'; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.arc(x, y, REVIVE_R, 0, 7); ctx.stroke(); ctx.setLineDash([]);
   }
 }
 function fmtTime(){ const m = Math.floor(t/60), s = Math.floor(t%60); return m + ':' + String(s).padStart(2,'0'); }
@@ -1867,17 +1892,17 @@ function render(){
   for (const p of players){ ctx.fillStyle = p === me ? '#7cfc9b' : '#8a93a8'; ctx.fillText(`${p.name}: ${p.kills}⌫ L${p.level}`, W - 16, ry); ry += 14; }
   let wx2 = 16; ctx.textAlign = 'left';
   for (const w of me.weapons){
-    ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(wx2, H - 58, 26, 26);
-    drawWeaponGlyph(wx2 + 13, H - 45, w.id);
+    ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(wx2, H - 64, 26, 26);
+    drawWeaponGlyph(wx2 + 13, H - 51, w.id);
     ctx.fillStyle = '#7CFC9B'; ctx.font = '700 9px ui-monospace,monospace';
-    ctx.fillText('▮'.repeat(w.lvl), wx2 + 1, H - 24);
+    ctx.fillText('▮'.repeat(w.lvl), wx2 + 1, H - 29);
     wx2 += 32;
   }
   const xpw = W - 40;
   ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(20, H - 12, xpw, 8);
   ctx.fillStyle = '#54c8ff'; ctx.fillRect(20, H - 12, xpw * clamp(me.xp/me.next, 0, 1), 8);
   ctx.fillStyle = '#8a93a8'; ctx.font = '700 11px ui-monospace,monospace';
-  ctx.fillText('LV ' + me.level, 20, H - 18);
+  ctx.fillText((mode === 'solo' ? 'LV ' : 'TEAM LV ') + me.level, 20, H - 16);
   if (boss && boss.hp > 0){
     const bw = Math.min(560, W - 120);
     ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(W/2 - bw/2 - 2, mode !== 'solo' ? 56 : 44, bw + 4, 16);
@@ -1886,6 +1911,14 @@ function render(){
     ctx.fillText(`MAIN PRINTER · MFP-9000${bossN > 1 ? ' ×' + bossN : ''}`, W/2, (mode !== 'solo' ? 56 : 44) + 13);
   }
   if (endless){ ctx.textAlign = 'center'; ctx.font = '700 12px ui-monospace,monospace'; ctx.fillStyle = '#7CFC9B'; ctx.fillText('NIGHT SHIFT ++', W/2, 78); }
+  const waitingFor = mode === 'client' ? (clientSnap ? clientSnap.pk : 0) : pendingCount();
+  if (st === 1 && !cardsOpen() && waitingFor > 0){
+    const wy = Math.max(110, H * .2);
+    ctx.fillStyle = 'rgba(10,12,18,.6)'; ctx.fillRect(0, wy - 30, W, 62);
+    ctx.textAlign = 'center'; ctx.fillStyle = '#54c8ff'; ctx.font = '700 18px ui-monospace,monospace';
+    ctx.fillText(`⏳ waiting for ${waitingFor} admin${waitingFor > 1 ? 's' : ''} to pick a patch…`, W/2, wy);
+    ctx.font = '400 12px ui-monospace,monospace'; ctx.fillStyle = '#8a93a8'; ctx.fillText('team level up — the shift resumes when everyone has chosen', W/2, wy + 20);
+  }
   if (st === 4){
     ctx.fillStyle = 'rgba(10,12,18,.7)'; ctx.fillRect(0, 0, W, H);
     ctx.textAlign = 'center'; ctx.fillStyle = '#e8ecf5';
