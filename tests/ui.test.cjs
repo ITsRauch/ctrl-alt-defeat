@@ -5,9 +5,9 @@ const PORT = 18240, U = 'http://127.0.0.1:' + PORT, PW = 'ui-test-pw-77';
 const ok = (c, m) => console.log((c ? 'PASS ' : 'FAIL ') + m);
 (async () => {
   fs.mkdirSync(ROOT + '/data', { recursive: true });
-  fs.writeFileSync(ROOT + '/data/highscores.json', JSON.stringify({ solo: [
-    { id: '1111111111111111', time: 436, kills: 434, level: 14, bosses: 0, players: [{ n: 'Bob', c: 'helpdesk' }], date: Date.now() },
-    { id: '2222222222222222', time: 130, kills: 144, level: 9, bosses: 0, players: [{ n: 'Alice', c: 'helpdesk' }], date: Date.now() }], multi: [] }));
+  fs.writeFileSync(ROOT + '/data/highscores.json', JSON.stringify({ season: 2, name: 'Season 2', archive: [], solo: [
+    { id: '1111111111111111', score: 9000, time: 436, kills: 434, level: 14, bosses: 0, players: [{ n: 'Bob', c: 'helpdesk' }], date: Date.now() },
+    { id: '2222222222222222', score: 1200, time: 130, kills: 144, level: 9, bosses: 0, players: [{ n: 'Alice', c: 'helpdesk' }], date: Date.now() }], multi: [] }));
   const srv = spawn('node', ['server.js', PORT], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, ADMIN_PASSWORD: PW, RATE_SCALE: '0' } });
   await new Promise(r => setTimeout(r, 500));
   fs.mkdirSync(ROOT + '/tests/screenshots', { recursive: true });

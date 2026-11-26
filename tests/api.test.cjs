@@ -10,11 +10,13 @@ const j = async (method, url, body, admin) => { const h = {}; if (body) h['Conte
   const srv = spawn('node', ['server.js', PORT], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, ADMIN_PASSWORD: PW, RATE_SCALE: '0' } });
   let log = ''; srv.stdout.on('data', d => log += d); await new Promise(r => setTimeout(r, 500));
   ok((await j('POST', '/api/highscores', { runId: 'abcdefgh12', time: 500, kills: 1, level: 1, bosses: 0, players: [{ n: 'x', c: 'devops' }] })).s === 405, 'score POST from clients is disabled (405)');
-  ok((await j('GET', '/api/highscores')).d.solo.length === 1, 'existing highscores kept');
+  const hs0 = (await j('GET', '/api/highscores')).d;
+  ok(hs0.season === 2 && hs0.solo.length === 0 && hs0.archive[0].season === 1 && hs0.archive[0].solo.length === 1, 'old time-ranked list archived as season 1, season 2 starts empty');
+  ok(JSON.parse(fs.readFileSync(ROOT + '/data/highscores.json')).archive[0].solo[0].players[0].n === 'Cheater', 'migration persisted to disk');
   ok((await j('DELETE', '/api/highscores/aaaaaaaaaaaaaaaa')).s === 403, 'delete score without admin -> 403');
   ok((await j('DELETE', '/api/highscores/aaaaaaaaaaaaaaaa', null, 'wrong')).s === 403, 'delete score wrong pw -> 403');
   ok((await j('GET', '/api/admin', null, PW)).s === 200, 'admin check with right pw');
-  const del = await j('DELETE', '/api/highscores/aaaaaaaaaaaaaaaa', null, PW); ok(del.s === 200 && del.d.solo.length === 0, 'admin deletes cheat score');
+  const del = await j('DELETE', '/api/highscores/aaaaaaaaaaaaaaaa', null, PW); ok(del.s === 200 && del.d.archive[0].solo.length === 0, 'admin deletes cheat score (also in archived seasons)');
   // tickets
   ok((await j('GET', '/api/tickets')).d.tickets.length === 0, 'no tickets initially');
   ok((await j('POST', '/api/tickets', { type: 'bug', prio: 'normal', title: 'x', author: 'a' })).s === 400, 'too short title rejected');

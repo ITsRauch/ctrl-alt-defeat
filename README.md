@@ -30,11 +30,16 @@ If the host closes the tab, everyone gets a clean "HOST LOGGED OFF" screen.
 The same guide is shown in-game on the start screen.
 
 ## Highscores & anti-cheat
-Top 20, separately for **solo** and **multiplayer** (2+ admins took part), ranked by time survived,
-then printers destroyed. Stored in `data/highscores.json`.
+Top 20, separately for **solo** and **multiplayer**, ranked by **points** (season 2, v1.3+):
+every destroyed printer scores its value (USB 1, Inkjet 2, Router 3, Fax 4, Laserjet 6, Golem 50,
+Ink Blob 1, Main Printer 1000 — `pts` in `EDEF`, `PTS` in `server.js`) plus 2 points per second survived.
+Each entry also stores the final loadout (weapons + patches with levels) of every admin.
+Finished seasons stay viewable via the season selector (`archive` in `data/highscores.json`;
+season 1 = v1.0–v1.2, ranked by time).
 
 Scores are **recorded by the server only**. Every run (solo too) streams 20 Hz snapshots through
-the server, which checks them against the game rules: max HP per class, HP <= max HP, every hit
+the server, which also counts the points itself (a printer that vanishes from the snapshots was
+destroyed; one that comes back is flagged) and checks the run against the game rules: max HP per class, HP <= max HP, every hit
 against the strongest possible weapon hit, movement speed, game clock vs. real time, kills vs.
 printers ever spawned, boss timing, level vs. available XP. Any violation -> "INTEGRITY CHECK FAILED",
 nothing is stored, the reason is shown to everyone and logged (`INTEGRITY FAIL ...`).

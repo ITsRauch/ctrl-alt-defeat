@@ -83,8 +83,16 @@ function readBody(req, res, max, cb) {
 
 /* ---------------- highscores (written by the server only) ---------------- */
 const HS_MAX = 20, MIN_RUN_S = 10;
+// Seasons: the current lists are ranked by points; finished seasons stay readable in `archive`.
+const SEASON = 2, SEASON_NAME = 'Season 2 · v1.3+ · ranked by points';
 let hs = loadJson(HS_FILE, { solo: [], multi: [] }, d => Array.isArray(d.solo) && Array.isArray(d.multi));
-const hsSort = (a, b) => (b.time - a.time) || (b.kills - a.kills) || (a.date - b.date);
+if (!hs.season) {                                   // v1.0-v1.2 file: time-ranked lists -> archive as season 1
+  hs = { season: SEASON, name: SEASON_NAME, solo: [], multi: [],
+    archive: [{ season: 1, name: 'Season 1 · v1.0–v1.2 · ranked by time', rankedBy: 'time', solo: hs.solo, multi: hs.multi }] };
+  if (hs.archive[0].solo.length + hs.archive[0].multi.length) { saveJson(HS_FILE, hs); console.log('highscores: season 1 archived, season 2 started'); }
+}
+hs.archive = hs.archive || [];
+const hsSort = (a, b) => (b.score - a.score) || (b.time - a.time) || (a.date - b.date);
 function insertScore(entry) {
   const list = entry.players.length > 1 ? 'multi' : 'solo';
   hs[list].push(entry); hs[list].sort(hsSort); hs[list] = hs[list].slice(0, HS_MAX);
@@ -104,7 +112,10 @@ const CLS = [
   { id: 'devops',   hp: 135, spd: 125,        dmg: 1 },
 ];
 const WIDS = ['mouse', 'toner', 'shout', 'badge', 'ping', 'keyboard', 'whip'];          // WDEF order
+const PIDS = ['coffee', 'dmg', 'atk', 'boots', 'area', 'xpup', 'magnet', 'crit', 'glasses'];   // PDEF order
 const WDMG = { mouse: [14, 6], toner: [9, 3], shout: [4, 2], badge: [9, 2], ping: [22, 6], keyboard: [20, 7], whip: [24, 7] };   // base, +per level
+const PTS = [1, 2, 3, 4, 6, 50, 1, 1000];          // points per printer type, EIDS order: usb inkjet router fax laser golem blob boss
+const PTS_PER_SECOND = 2;
 const MAX_HP_BONUS = 100, MAX_SPEED_MUL = 1.4 * 1.2, MAX_WEAPONS = 6, MAX_WLVL = 5;   // boots 5 x coffee rush
 const XP_NEED = [0, 0];                // total XP needed to reach level L
 for (let L = 2, next = 8, sum = 0; L <= 200; L++) { sum += next; XP_NEED[L] = sum; next = Math.round(next * 1.32); }
@@ -115,7 +126,7 @@ function witness(room, S) {
   if (!Number.isFinite(t) || !Array.isArray(S.p)) return;
   let r = room.run;
   if (!r) r = room.run = { start: now - t * 1000, lastT: t, roster: new Map(), pos: new Map(), kills: new Map(),
-    level: 1, maxEid: 0, maxHit: 0, bosses: 0, flags: [], done: false,
+    level: 1, maxEid: 0, maxHit: 0, bosses: 0, flags: [], done: false, alive: new Map(), gone: new Set(), pts: 0, destroyed: 0,
     unranked: t > 5 ? 'the server only saw part of this shift' : '' };
   if (r.done) return;
   const flag = msg => { if (r.flags.length < 4 && !r.flags.includes(msg)) r.flags.push(msg); };
@@ -128,7 +139,16 @@ function witness(room, S) {
     const cls = CLS[cid];
     const name = cleanText(String(a[15] || 'Admin'), 16) || 'Admin';
     if (!cls) { flag('unknown class'); continue; }
-    r.roster.set(id, { n: name, c: cls.id });
+    const kit = { n: name, c: cls.id, w: [], p: [] };              // final loadout is stored with the score
+    if (Array.isArray(wflat)) for (let i = 0; i + 1 < wflat.length; i += 3) if (WIDS[wflat[i]]) kit.w.push([WIDS[wflat[i]], wflat[i + 1] | 0]);
+    const pflat = a[17];
+    if (pflat !== undefined && (!Array.isArray(pflat) || pflat.length > PIDS.length * 2)) flag(`${name}: impossible patches`);
+    else if (pflat) for (let i = 0; i + 1 < pflat.length; i += 2){
+      const pid = PIDS[pflat[i]], pl = pflat[i + 1];
+      if (!pid || !Number.isInteger(pl) || pl < 1 || pl > 5){ flag(`${name}: impossible patch level`); break; }
+      kit.p.push([pid, pl]);
+    }
+    r.roster.set(id, kit);
     if (mhp > cls.hp + MAX_HP_BONUS + 1) flag(`${name}: max HP ${mhp} (limit ${cls.hp + MAX_HP_BONUS})`);
     if (hp > mhp + 1) flag(`${name}: HP ${hp} above max HP ${mhp}`);
     const prev = r.pos.get(id);
@@ -148,9 +168,19 @@ function witness(room, S) {
   if (Array.isArray(S.h)) for (const h of S.h) {
     if (Array.isArray(h) && h[2] > r.maxHit) { flag(`hit for ${h[2]} damage (max possible ${Math.floor(r.maxHit)})`); break; }
   }
-  if (Array.isArray(S.e)) for (const e of S.e) if (Array.isArray(e) && e[0] > r.maxEid) r.maxEid = e[0];
+  if (Array.isArray(S.e)) {
+    const now = new Map();
+    for (const e of S.e) if (Array.isArray(e)) {
+      now.set(e[0], e[1] | 0);
+      if (e[0] > r.maxEid) r.maxEid = e[0];
+      if (r.gone.has(e[0])) flag('a destroyed printer came back');
+    }
+    for (const [id, ty] of r.alive) if (!now.has(id)) { r.gone.add(id); r.pts += PTS[ty] || 0; r.destroyed++; }
+    r.alive = now;
+  }
   const kills = [...r.kills.values()].reduce((s, k) => s + k, 0);
   if (kills > r.maxEid + 25) flag(`${kills} kills, but only ${r.maxEid} printers ever spawned`);
+  if (r.destroyed > kills + 30) flag(`${r.destroyed} printers vanished, but only ${kills} were destroyed`);
   if (r.maxEid > 74 + 20 * t) flag('printers spawned impossibly fast');
   const bsn = S.bsn | 0;
   if (bsn > (t < 149 ? 0 : 1 + Math.floor((t - 149) / 120))) flag('boss appeared too early');
@@ -166,16 +196,17 @@ function finishRun(room) {
   r.done = true;
   const players = [...r.roster.values()];
   const res = { t: 'hs', list: players.length > 1 ? 'multi' : 'solo', time: Math.round(r.lastT),
-    kills: [...r.kills.values()].reduce((s, k) => s + k, 0), level: r.level, bosses: r.bosses, rank: null };
+    kills: [...r.kills.values()].reduce((s, k) => s + k, 0), level: r.level, bosses: r.bosses, rank: null,
+    score: r.pts + PTS_PER_SECOND * Math.round(r.lastT) };
   if (r.flags.length) {
     res.flagged = r.flags;
     console.log(`INTEGRITY FAIL room ${room.code} [${fmtNames(r)}]: ${r.flags.join(' | ')}`);
   } else if (r.unranked) res.unranked = r.unranked;
   else if (r.lastT < MIN_RUN_S) res.unranked = `shifts under ${MIN_RUN_S} s don't count`;
   else {
-    const entry = { id: crypto.randomBytes(8).toString('hex'), time: res.time, kills: res.kills, level: res.level, bosses: res.bosses, players, date: Date.now() };
+    const entry = { id: crypto.randomBytes(8).toString('hex'), score: res.score, time: res.time, kills: res.kills, level: res.level, bosses: res.bosses, players, date: Date.now() };
     Object.assign(res, insertScore(entry), { id: entry.id });
-    console.log(`score ${res.list} ${res.time}s ${res.kills} kills [${fmtNames(r)}] -> ${res.rank ? '#' + res.rank : 'not ranked'}`);
+    console.log(`score ${res.list} ${res.score} pts ${res.time}s ${res.kills} kills [${fmtNames(r)}] -> ${res.rank ? '#' + res.rank : 'not ranked'}`);
   }
   for (const c of room.conns.values()) send(c, res);
 }
@@ -245,7 +276,7 @@ function handleApi(req, res, p) {
   if (m && req.method === 'DELETE') {
     if (!requireAdmin(req, res)) return;
     let hit = null;
-    for (const l of ['solo', 'multi']) { const e = hs[l].find(x => x.id === m[1]); if (e) { hit = e; hs[l] = hs[l].filter(x => x !== e); } }
+    for (const box of [hs, ...hs.archive]) for (const l of ['solo', 'multi']) { const e = box[l].find(x => x.id === m[1]); if (e) { hit = e; box[l] = box[l].filter(x => x !== e); } }
     if (!hit) return sendJson(res, 404, { error: 'score not found' });
     saveJson(HS_FILE, hs);
     console.log(`score deleted: ${hit.time}s [${hit.players.map(p => p.n).join(', ')}]`);

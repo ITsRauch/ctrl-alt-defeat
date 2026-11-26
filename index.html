@@ -199,6 +199,10 @@
   table.hs tr.r1 td.rk{color:#ffd700} table.hs tr.r2 td.rk{color:#c0c8d8} table.hs tr.r3 td.rk{color:#cd8a4a}
   table.hs tr.mine td{background:rgba(124,252,155,.12)} table.hs tr.mine td.who{color:var(--lime)}
   .cls{font-size:10px;color:var(--cyan);margin-left:4px}
+  .kit{display:flex;flex-wrap:wrap;gap:3px;margin:3px 0 1px}
+  .chip{display:inline-flex;align-items:center;gap:2px;background:#171b26;border:1px solid #2a3248;border-radius:5px;padding:1px 5px 1px 3px;font-size:11px;color:var(--dim);line-height:18px;cursor:default}
+  .chip.wp{border-color:#3a4460;color:var(--lime)} .chip canvas{width:16px;height:16px}
+  .pl1+.pl1{margin-top:6px}
   .hsempty{padding:26px;color:var(--dim);font-size:13px}
   .rankline{font-size:16px;font-weight:700;min-height:22px;margin:4px 0 6px;letter-spacing:1px}
   .rankline.new{color:var(--amber);text-shadow:0 0 16px rgba(255,200,87,.4)} .rankline.meh{color:var(--dim);font-weight:400;font-size:13px}
@@ -296,8 +300,9 @@
 
   <div id="scores" class="overlay hidden">
     <h1 style="font-size:30px">🏆 HALL OF FAME</h1>
-    <div class="tabs"><button class="tab" data-tab="solo">SOLO</button><button class="tab" data-tab="multi">MULTIPLAYER</button></div>
-    <div class="hsnote">Top 20 · ranked by time survived, then printers destroyed · stored on the server</div>
+    <div class="tabs"><button class="tab" data-tab="solo">SOLO</button><button class="tab" data-tab="multi">MULTIPLAYER</button>
+      <select class="fld" id="hsSeason" style="width:auto;margin-left:10px"></select></div>
+    <div class="hsnote" id="hsNote"></div>
     <div class="hswrap"><table class="hs" id="hsTable"></table></div>
     <div style="display:flex;gap:10px;align-items:center;margin-top:10px"><button class="ghostbtn" id="btnScoresClose" style="margin:0">close</button><button class="backbtn adminbtn">🔑 admin</button></div>
   </div>
@@ -464,14 +469,14 @@ const PDEF = {
 };
 const PIDS = Object.keys(PDEF);
 const EDEF = {
-  usb:    { hp: 6,   spd: 132, r: 9,  dmg: 4,  xp: 1,  name: 'Cursed USB' },
-  inkjet: { hp: 14,  spd: 58,  r: 14, dmg: 8,  xp: 2,  name: 'Possessed Inkjet' },
-  router: { hp: 16,  spd: 98,  r: 13, dmg: 8,  xp: 3,  name: 'Feral Router', dash: true },
-  fax:    { hp: 24,  spd: 46,  r: 15, dmg: 8,  xp: 4,  name: 'Rogue Fax', ranged: true },
-  laser:  { hp: 55,  spd: 40,  r: 19, dmg: 14, xp: 6,  name: 'Evil Laserjet' },
-  golem:  { hp: 300, spd: 30,  r: 34, dmg: 20, xp: 45, name: 'Toner Golem', elite: true },
-  blob:   { hp: 18,  spd: 85,  r: 10, dmg: 6,  xp: 1,  name: 'Ink Blob' },
-  boss:   { hp: 2400, spd: 36, r: 66, dmg: 26, xp: 300, name: 'MAIN PRINTER · MFP-9000', boss: true },
+  usb:    { hp: 6,   spd: 132, r: 9,  dmg: 4,  xp: 1, pts: 1,  name: 'Cursed USB' },
+  inkjet: { hp: 14,  spd: 58,  r: 14, dmg: 8,  xp: 2, pts: 2,  name: 'Possessed Inkjet' },
+  router: { hp: 16,  spd: 98,  r: 13, dmg: 8,  xp: 3, pts: 3,  name: 'Feral Router', dash: true },
+  fax:    { hp: 24,  spd: 46,  r: 15, dmg: 8,  xp: 4, pts: 4,  name: 'Rogue Fax', ranged: true },
+  laser:  { hp: 55,  spd: 40,  r: 19, dmg: 14, xp: 6, pts: 6,  name: 'Evil Laserjet' },
+  golem:  { hp: 300, spd: 30,  r: 34, dmg: 20, xp: 45, pts: 50, name: 'Toner Golem', elite: true },
+  blob:   { hp: 18,  spd: 85,  r: 10, dmg: 6,  xp: 1, pts: 1,  name: 'Ink Blob' },
+  boss:   { hp: 2400, spd: 36, r: 66, dmg: 26, xp: 300, pts: 1000, name: 'MAIN PRINTER · MFP-9000', boss: true },
 };
 const EIDS = Object.keys(EDEF);
 const HOOD = { sysadmin: '#3a6ea5', helpdesk: '#b5651d', devops: '#6b4a9e' };
@@ -588,11 +593,13 @@ function addPlayer(ch, id, name){
   if (isHost()) runRoster.set(p.id, { n: p.name, c: ch.id });
   return p;
 }
+const PTS_PER_SECOND = 2;              // score = printer points + 2 per second survived (server recomputes it)
+let runPts = 0, liveScore = 0;
 let runId = '', runKills = 0, runBosses = 0, runMaxLvl = 1, runRoster = new Map(), hsSent = false, myHsId = '';
 function newRun(ch){
   teamXp = 0; teamLevel = 1; teamBase = 8;
   runId = Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(16).padStart(2, '0')).join('');
-  runKills = 0; runBosses = 0; runMaxLvl = 1; runRoster = new Map(); hsSent = false;
+  runKills = 0; runBosses = 0; runMaxLvl = 1; runRoster = new Map(); hsSent = false; runPts = 0;
   players = []; me = null;
   if (isHost()) addPlayer(ch, myId, pendingName);
   enemies = []; eprojs = []; projs = []; pickups = []; particles = []; texts = []; zaps = []; fx = [];
@@ -687,7 +694,7 @@ function hurtEnemy(e, dmg, crit, srcP){
 function killEnemy(e, srcP){
   e.dead = true;
   const killer = srcP || me; if (killer) killer.kills++;
-  runKills++; if (e.boss) runBosses++;
+  runKills++; if (e.boss) runBosses++; runPts += EDEF[e.type].pts || 0;
   sndDie();
   inkBurst(e.x, e.y, e.type === 'golem' ? '#111' : '#33a4a', e.boss ? 60 : e.type === 'golem' ? 30 : 9);
   const mult = 1 + .15 * (((killer || {}).pass || {}).xpup || 0);
@@ -792,7 +799,7 @@ function showCards(cards){           // local UI — this player chooses
 /* ---------- snapshot (host -> clients, 20 Hz) ---------- */
 function buildSnap(){
   syncTeamXp();
-  const S = { k: 's', t: Math.round(t * 10) / 10, st, dl: players.length, pk: pendingCount(), bs: boss ? Math.round(boss.hp) : -1, bsn: bossN, el: endless ? 1 : 0 };
+  const S = { k: 's', t: Math.round(t * 10) / 10, st, dl: players.length, pk: pendingCount(), bs: boss ? Math.round(boss.hp) : -1, bsn: bossN, el: endless ? 1 : 0, sc: runPts + PTS_PER_SECOND * Math.floor(t) };
   S.p = players.map(p => {
     const wflat = [];
     for (const w of p.weapons){ wflat.push(WIDS.indexOf(w.id), w.lvl, Math.round(w.ang * 100) / 100); }
@@ -800,7 +807,8 @@ function buildSnap(){
             Math.round(p.face * 100) / 100, p.out ? -1 : Math.round(p.dn * 10) / 10, Math.round((p.rv || 0) * 10) / 10,
             p.level, p.kills, Math.round(p.xp), p.next,
             CHARS.findIndex(c => c.id === p.ch.id), wflat, p.pass.area || 0, p.name,
-            Math.round(moveSpeed(p))];
+            Math.round(moveSpeed(p)),
+            PIDS.flatMap((id, i) => p.pass[id] ? [i, p.pass[id]] : [])];        // patches (server stores the final loadout)
   });
   S.e = enemies.map(e => [e.id, EIDS.indexOf(e.type), Math.round(e.x), Math.round(e.y), Math.round(e.hp)]);
   S.j = projs.map(pr => [Math.round(pr.x), Math.round(pr.y), ['cursor','toner','key'].indexOf(pr.kind), Math.round((pr.ang||0)*10)/10]);
@@ -838,7 +846,7 @@ function cardsOpen(){ return !document.getElementById('levelup').classList.conta
 let clientSnap = null, snapAge = 0;
 function applySnap(S){
   clientSnap = S; snapAge = 0;
-  st = S.st; t = S.t; bossN = S.bsn; endless = !!S.el;
+  st = S.st; t = S.t; bossN = S.bsn; endless = !!S.el; liveScore = S.sc || 0;
   const seen = new Set();
   for (const a of S.p){
     const [id, x, y, hp, mhp, face, dn, rv, lv, kl, xp, nx, cid, wflat] = a;
@@ -1017,7 +1025,7 @@ function copyText(txt, done){
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
 
 /* ---------- highscores ---------- */
-let hsData = null, hsTab = 'solo';
+let hsData = null, hsTab = 'solo', hsSeasonIdx = 0;
 const fmtT = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
 async function loadScores(){
   try { const r = await fetch('/api/highscores', { cache: 'no-store' }); if (r.ok) hsData = await r.json(); } catch(e){}
@@ -1028,36 +1036,47 @@ function renderTeaser(){
   if (!hsData){ el.textContent = ''; return; }
   const bits = [];
   const s1 = hsData.solo[0], m1 = hsData.multi[0];
-  if (s1) bits.push(`best solo <b>${fmtT(s1.time)}</b> by ${escapeHtml(s1.players[0].n)}`);
-  if (m1) bits.push(`best team <b>${fmtT(m1.time)}</b> (${m1.players.length} admins)`);
-  el.innerHTML = bits.length ? bits.join(' &nbsp;·&nbsp; ') : 'no scores yet — be the first!';
+  const pts = r => (r.score || 0).toLocaleString('en-US') + ' pts';
+  if (s1) bits.push(`best solo <b>${pts(s1)}</b> by ${escapeHtml(s1.players[0].n)}`);
+  if (m1) bits.push(`best team <b>${pts(m1)}</b> (${m1.players.length} admins)`);
+  el.innerHTML = bits.length ? bits.join(' &nbsp;·&nbsp; ') : (hsData.archive && hsData.archive.length ? 'new season — no scores yet, be the first!' : 'no scores yet — be the first!');
 }
 function renderScores(){
   const $ = id => document.getElementById(id);
   for (const b of document.querySelectorAll('#scores .tab')) b.classList.toggle('on', b.dataset.tab === hsTab);
   if (!hsData){ $('hsTable').innerHTML = '<tr><td class="hsempty">Highscores unavailable — is the game server reachable?</td></tr>'; return; }
-  const rows = hsData[hsTab] || [];
+  const seasons = [hsData, ...(hsData.archive || [])], sel = $('hsSeason');
+  if (sel.options.length !== seasons.length) sel.innerHTML = seasons.map((x, i) => `<option value="${i}">${x === hsData ? '★ ' : ''}${escapeHtml(x.name || 'Season ' + (x.season || 1))}</option>`).join('');
+  sel.value = String(hsSeasonIdx);
+  const box = seasons[hsSeasonIdx] || hsData, byTime = box.rankedBy === 'time' || !box.season;
+  $('hsNote').textContent = byTime ? 'Archived season · top 20 · ranked by time survived · stored on the server'
+    : `Top 20 · score = points per destroyed printer (USB 1 … Golem ${EDEF.golem.pts}, Main Printer ${EDEF.boss.pts}) + ${PTS_PER_SECOND} per second survived · verified by the server`;
+  const rows = box[hsTab] || [];
   if (!rows.length){ $('hsTable').innerHTML = `<tr><td class="hsempty">No ${hsTab === 'solo' ? 'solo' : 'multiplayer'} scores yet. Go set one!</td></tr>`; return; }
   const short = { sysadmin: 'Sysadmin', helpdesk: 'Helpdesk', devops: 'DevOps' };
-  let h = `<tr><th>#</th><th class="who">${hsTab === 'solo' ? 'ADMIN' : 'TEAM'}</th><th>TIME</th><th>KILLS</th><th>LVL</th><th>BOSS</th><th>DATE</th>${adminKey ? '<th></th>' : ''}</tr>`;
+  let h = `<tr><th>#</th><th class="who">${hsTab === 'solo' ? 'ADMIN' : 'TEAM'}</th>${byTime ? '' : '<th>SCORE</th>'}<th>TIME</th><th>KILLS</th><th>LVL</th><th>BOSS</th><th>DATE</th>${adminKey ? '<th></th>' : ''}</tr>`;
   rows.forEach((r, i) => {
-    const who = r.players.map(p => `${escapeHtml(p.n)}<span class="cls">${short[p.c] || p.c}</span>`).join(' &nbsp;· ');
+    const kit = p => (p.w || p.p) ? `<div class="kit">${(p.w || []).map(([id, l]) => `<span class="chip wp" title="${(WDEF[id] || {}).name || id} · level ${l}"><canvas class="wg" data-w="${id}" width="28" height="28"></canvas>${l}</span>`).join('')}`
+      + `${(p.p || []).map(([id, l]) => `<span class="chip" title="${(PDEF[id] || {}).name || id} · level ${l}">${MAN_P[id] || '⬆'}${l}</span>`).join('')}</div>` : '';
+    const who = r.players.map(p => `<div class="pl1">${escapeHtml(p.n)}<span class="cls">${short[p.c] || p.c}</span>${kit(p)}</div>`).join('');
     const d = new Date(r.date);
-    h += `<tr class="r${i + 1}${r.id === myHsId ? ' mine' : ''}"><td class="rk">${i + 1}</td><td class="who">${who}</td><td><b>${fmtT(r.time)}</b></td><td>${r.kills}</td><td>${r.level}</td>`
+    h += `<tr class="r${i + 1}${r.id === myHsId ? ' mine' : ''}"><td class="rk">${i + 1}</td><td class="who">${who}</td>${byTime ? `<td><b>${fmtT(r.time)}</b></td>` : `<td><b style="color:var(--amber)">${(r.score || 0).toLocaleString('en-US')}</b></td><td>${fmtT(r.time)}</td>`}<td>${r.kills}</td><td>${r.level}</td>`
        + `<td>${r.bosses ? '☠'.repeat(Math.min(r.bosses, 3)) + (r.bosses > 3 ? '×' + r.bosses : '') : '–'}</td><td>${d.toLocaleDateString()}</td>`
        + (adminKey ? `<td><button class="xbtn" data-del="${r.id}" title="delete this score">✖</button></td>` : '') + `</tr>`;
   });
   $('hsTable').innerHTML = h;
+  for (const cv of document.querySelectorAll('#hsTable canvas.wg')){ const c = cv.getContext('2d'); c.setTransform(2, 0, 0, 2, 0, 0); drawWeaponGlyph(7, 7, cv.dataset.w, c); }   // 28 px canvas, 2x
   for (const b of document.querySelectorAll('#hsTable .xbtn')) b.onclick = async () => {
     const e = rows.find(x => x.id === b.dataset.del); if (!e) return;
-    if (!confirm(`Delete the ${fmtT(e.time)} score of ${e.players.map(p => p.n).join(', ')}?`)) return;
+    if (!confirm(`Delete the ${byTime ? fmtT(e.time) : (e.score || 0) + ' pts'} score of ${e.players.map(p => p.n).join(', ')}?`)) return;
     const r = await api('DELETE', '/api/highscores/' + e.id);
     if (!r.ok){ alert('Could not delete: ' + r.error); return; }
-    hsData = { solo: r.solo, multi: r.multi }; renderScores(); renderTeaser();
+    hsData = r; renderScores(); renderTeaser();
   };
 }
 async function openScores(tab){
   if (tab) hsTab = tab;
+  hsSeasonIdx = 0;
   document.getElementById('scores').classList.remove('hidden');
   renderScores(); await loadScores(); renderScores();
 }
@@ -1077,13 +1096,14 @@ function showRank(res){
   const label = res.list === 'multi' ? 'MULTIPLAYER' : 'SOLO';
   if (res.flagged){ el.className = 'rankline bad'; el.textContent = '⚠ INTEGRITY CHECK FAILED — score not recorded: ' + res.flagged.join(' · '); }
   else if (res.unranked){ el.className = 'rankline meh'; el.textContent = 'Not ranked: ' + res.unranked + '.'; }
-  else if (res.rank){ el.className = 'rankline new'; el.textContent = `🏆 NEW HIGHSCORE — #${res.rank} in ${label} top 20!`; }
-  else { el.className = 'rankline meh'; el.textContent = `Verified, but not in the ${label.toLowerCase()} top 20 this time.`; }
+  else if (res.rank){ el.className = 'rankline new'; el.textContent = `🏆 NEW HIGHSCORE — ${(res.score || 0).toLocaleString('en-US')} pts · #${res.rank} in ${label} top 20!`; }
+  else { el.className = 'rankline meh'; el.textContent = `Verified: ${(res.score || 0).toLocaleString('en-US')} pts — not in the ${label.toLowerCase()} top 20 this time.`; }
 }
 (function initScores(){
   document.getElementById('btnScores').onclick = () => openScores();
   document.getElementById('btnScoresClose').onclick = () => document.getElementById('scores').classList.add('hidden');
   for (const b of document.querySelectorAll('#scores .tab')) b.onclick = () => { hsTab = b.dataset.tab; renderScores(); };
+  document.getElementById('hsSeason').onchange = e => { hsSeasonIdx = +e.target.value; renderScores(); };
   addEventListener('keydown', e => { if (e.key === 'Escape' && !(e.target && e.target.tagName === 'TEXTAREA')) closeTopOverlay(); });
   if (location.protocol.startsWith('http')) loadScores();
 })();
@@ -1127,9 +1147,9 @@ function renderManual(){
       const d = EDEF[id], m = MAN_E[id] || { tags: [], desc: '', when: '' };
       const icon = iconCanvas(c => { const k = Math.min(1, 21 / d.r); c.translate(32, 36); c.scale(k, k); drawPrinter(0, 0, { type: id, r: d.r, flash: 0, bob: 0, boss: !!d.boss }, c); });
       card(icon, `<h3>${d.name}</h3><div class="mtags">${m.tags.map(x => tg(x, x === 'BOSS' || x === 'ELITE' ? 'critical' : x === 'RANGED' || x === 'DASH' ? 'high' : '')).join('')}</div>
-        <p>${m.desc}</p><div class="mst"><b>HP</b> ${d.hp} · <b>DMG</b> ${d.dmg} · <b>SPEED</b> ${d.spd} · <b>XP</b> ${d.xp}<br><b>appears</b> ${m.when}</div>`);
+        <p>${m.desc}</p><div class="mst"><b>HP</b> ${d.hp} · <b>DMG</b> ${d.dmg} · <b>SPEED</b> ${d.spd} · <b>XP</b> ${d.xp} · <b style="color:var(--amber)">PTS</b> ${d.pts}<br><b>appears</b> ${m.when}</div>`);
     }
-    note.textContent = 'Printers get tougher the longer the shift runs: +100 % HP every 110 s and +100 % contact damage every 4 minutes. Values above are the starting values. Speed for comparison: admins walk at 96–172.';
+    note.textContent = `Highscore: every destroyed printer scores its PTS value, plus ${PTS_PER_SECOND} points per second survived. ` + 'Printers get tougher the longer the shift runs: +100 % HP every 110 s and +100 % contact damage every 4 minutes. Values above are the starting values. Speed for comparison: admins walk at 96–172.';
   } else if (manTab === 'weapons'){
     for (const id of WIDS){
       const w = WDEF[id], starters = CHARS.filter(ch => ch.weapon === id).map(ch => ch.name);
@@ -1881,6 +1901,9 @@ function render(){
   ctx.fillStyle = '#fff'; ctx.fillText(me.out ? 'OUT — spectating your team' : me.dn > 0 ? `DOWNED — rescue! ${Math.ceil(me.dn)}s` : `HP ${Math.ceil(me.hp)}/${Math.round(me.maxhp)}`, 20, 30);
   ctx.textAlign = 'center'; ctx.font = '700 20px ui-monospace,monospace';
   ctx.fillStyle = '#e8ecf5'; ctx.fillText(fmtTime(), W/2, 30);
+  const sc = mode === 'client' ? liveScore : runPts + PTS_PER_SECOND * Math.floor(t);
+  ctx.textAlign = 'left'; ctx.font = '700 13px ui-monospace,monospace'; ctx.fillStyle = '#ffc857';
+  ctx.fillText(`${sc.toLocaleString('en-US')} PTS`, 16, 52); ctx.textAlign = 'center'; ctx.font = '700 20px ui-monospace,monospace';
   if (mode !== 'solo'){
     ctx.font = '700 11px ui-monospace,monospace'; ctx.fillStyle = '#7cfc9b';
     ctx.fillText(`ROOM ${roomCode} · ${players.length} admin${players.length > 1 ? 's' : ''} · ${mode === 'host' ? 'YOU HOST' : 'client'}`, W/2, 46);
