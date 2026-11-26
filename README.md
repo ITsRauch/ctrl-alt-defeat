@@ -10,6 +10,12 @@
 Highscores live in `./data/highscores.json` (bind mount, survives rebuilds).
 Updating the game = copy the new `index.html`/`server.js` here, then `sudo docker compose up -d --build`.
 
+**Local / offline (training at home):**
+- Solo only, no install: just open `index.html` in a browser (no highscores, helpdesk offline).
+- Full version incl. local highscores and multiplayer on your home network: double-click
+  `start-local.command` (macOS) or run `./start-local.command [port]` — opens http://localhost:8091,
+  data is stored in `./data` next to it, separate from the company server. Ctrl-C stops it.
+
 **Without Docker:** any machine with Node 18+ (zero dependencies):
 
     node server.js          # default port 8091
