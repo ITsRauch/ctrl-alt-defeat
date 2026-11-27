@@ -111,3 +111,6 @@ the anti-cheat limits in `server.js` (`CLS`, `WDMG`, ...) must match the game co
 - `Dockerfile`, `compose.yaml`, `.dockerignore`, `setup.sh` — hardened container setup
 - `start-local.command` — start the server locally and open the browser (macOS / Linux)
 - `tests/` — headless-browser and API test suites, balance labs (dev only)
+
+## License
+[MIT](LICENSE) © 2026 ITsRauch

@@ -1,8 +1,8 @@
 {
   "name": "ctrl-alt-defeat",
   "version": "1.4.0",
-  "private": true,
   "description": "CTRL-ALT-DEFEAT: Printer Uprising - LAN co-op browser game (zero runtime dependencies)",
+  "license": "MIT",
   "scripts": {
     "start": "node server.js 8091",
     "test": "node tests/api.test.cjs && node tests/ui.test.cjs && node tests/manual.test.cjs && node tests/balance.test.cjs && node tests/score.test.cjs && node tests/cheat.test.cjs && node tests/endless.test.cjs",
