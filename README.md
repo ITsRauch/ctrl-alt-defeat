@@ -3,7 +3,7 @@
 # CTRL-ALT-DEFEAT MP — LAN co-op (Printer Uprising)
 
 ## Run the server
-**Docker (as deployed on the LAN server, `/opt/ctrl-alt-defeat`):**
+**Docker (`/opt/ctrl-alt-defeat`):**
 
     sudo docker compose up -d --build     # build + start (port 8091)
     sudo docker compose logs -f           # logs
