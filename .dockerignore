@@ -3,3 +3,8 @@ secrets/
 backup*/
 *.md.bak
 .git
+.env
+setup.sh
+tests/
+docs/
+node_modules/

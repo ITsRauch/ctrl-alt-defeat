@@ -84,12 +84,15 @@ function readBody(req, res, max, cb) {
 /* ---------------- highscores (written by the server only) ---------------- */
 const HS_MAX = 20, MIN_RUN_S = 10;
 // Seasons: the current lists are ranked by points; finished seasons stay readable in `archive`.
-const SEASON = 2, SEASON_NAME = 'Season 2 · v1.3+ · ranked by points';
+const SEASON = 2, SEASON_NAME = 'Season 2 · ranked by points';
 let hs = loadJson(HS_FILE, { solo: [], multi: [] }, d => Array.isArray(d.solo) && Array.isArray(d.multi));
-if (!hs.season) {                                   // v1.0-v1.2 file: time-ranked lists -> archive as season 1
-  hs = { season: SEASON, name: SEASON_NAME, solo: [], multi: [],
-    archive: [{ season: 1, name: 'Season 1 · v1.0–v1.2 · ranked by time', rankedBy: 'time', solo: hs.solo, multi: hs.multi }] };
-  if (hs.archive[0].solo.length + hs.archive[0].multi.length) { saveJson(HS_FILE, hs); console.log('highscores: season 1 archived, season 2 started'); }
+if (!hs.season) {
+  const old = hs.solo.length + hs.multi.length;
+  if (old) {                                        // file from v1.0-v1.2: time-ranked lists -> archived as season 1
+    hs = { season: SEASON, name: SEASON_NAME, solo: [], multi: [],
+      archive: [{ season: 1, name: 'Season 1 · ranked by time', rankedBy: 'time', solo: hs.solo, multi: hs.multi }] };
+    saveJson(HS_FILE, hs); console.log('highscores: season 1 archived, season 2 started');
+  } else hs = { season: 1, name: 'Season 1 · ranked by points', solo: [], multi: [], archive: [] };   // fresh install
 }
 hs.archive = hs.archive || [];
 const hsSort = (a, b) => (b.score - a.score) || (b.time - a.time) || (a.date - b.date);
