@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/banner.png" alt="CTRL-ALT-DEFEAT · Printer Uprising · LAN co-op" width="663"></p>
+
 # CTRL-ALT-DEFEAT MP — LAN co-op (Printer Uprising)
 
 ## Run the server
